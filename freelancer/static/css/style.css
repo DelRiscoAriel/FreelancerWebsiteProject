@@ -1,0 +1,90 @@
+/* General layout used across pages */
+body {
+    margin: 0;
+    font-family: sans-serif;
+}
+
+/* Sidebar layout shared by base.html */
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.sidebar nav a,
+.sidebar form button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    text-align: left;
+    text-decoration: none;
+    color: #333;
+    margin-bottom: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 6px;
+}
+
+.sidebar nav a:hover,
+.sidebar form button:hover {
+    background-color: #eaeaea;
+}
+
+/* Main content area */
+.main-panel {
+    flex: 0.5;
+    padding: 30px;
+}
+
+/* Shared form styling */
+form input, form select, form textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+form button {
+    background-color: #3366ff;
+    color: white;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+/* Account form wrapper */
+.account-settings {
+    max-width: 600px;
+    background: #fff;
+    padding: 25px 30px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.account-settings h2 {
+    margin-bottom: 20px;
+    font-size: 22px;
+}
+
+.account-settings .messages {
+    margin-top: 15px;
+    padding: 10px;
+    border-left: 4px solid #4caf50;
+    background-color: #f0fdf0;
+}

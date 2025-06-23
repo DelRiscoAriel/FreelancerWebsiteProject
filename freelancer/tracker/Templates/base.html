@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    ...
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Freelancer Tracker</h2>
+            <nav>
+                <a href="{% url 'dashboard' %}">🏠 Dashboard</a>
+                <a href="{% url 'completed' %}"> Completed </a>
+                <!-- <a href="{% url 'invoice_list' %}">🧾 Invoices</a> -->
+                <a href="{% url 'account' %}">👤 Account</a>
+            </nav>
+
+            {% if user.is_authenticated %}
+            <form action="{% url 'logoutTemp' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">🚪 Logout ({{ user.username }})</button>
+            </form>
+            {% endif %}
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-panel">
+            {% block content %}
+            <!-- Page-specific content will go here -->
+            {% endblock %}
+        </div>
+        
+    </div>
+</body>
+</html>

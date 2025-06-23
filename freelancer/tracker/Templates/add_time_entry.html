@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Track Time for Project: {{ project.name }}</h2>
+
+<style>
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+
+    .radio-group label {
+        margin-right: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #manual-section,
+    #timed-section,
+    #set-times {
+        display: none;
+    }
+
+    #timer-box {
+        margin-top: 10px;
+        padding: 10px;
+        background: #eef;
+        border: 1px solid #ccd;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    button {
+        background-color: #3366ff;
+        color: white;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+</style>
+
+<form method="post" id="time-entry-form">
+    {% csrf_token %}
+
+    <div class="radio-group form-group">
+        <label><strong>Time Entry Mode:</strong></label><br>
+        {% for radio in form.mode %}
+            <label>{{ radio.tag }} {{ radio.choice_label }}</label>
+        {% endfor %}
+    </div>
+
+    <!-- Manual Hours Mode -->
+    <div id="manual-section" class="form-group">
+        {{ form.manual_hours.label_tag }}
+        {{ form.manual_hours }}
+    </div>
+
+    <!-- Start/End Time Mode -->
+     <div id="set-times">
+        <div class="form-group">
+            {{ form.start_time.label_tag }}
+            {{ form.start_time }}
+        </div>
+        <div class="form-group">
+            {{ form.end_time.label_tag }}
+            {{ form.end_time }}
+        </div>
+     </div>
+
+    <!-- Timer Mode -->
+    <div id="timed-section">
+        <div id="timer-box">
+            <button type="button" id="start-timer">▶️ Start Timer</button>
+            <button type="button" id="stop-timer" disabled>⏹ Stop Timer</button>
+            <strong>Elapsed: <span id="live-timer">00:00:00</span></strong>
+        </div>
+    </div>
+
+    <div class="form-group">
+        {{ form.description.label_tag }}
+        {{ form.description }}
+    </div>
+
+    <button type="submit">Save Time Entry</button>
+</form>
+
+<script>
+    const modeRadios = document.querySelectorAll('input[name="mode"]');
+    const manualSection = document.getElementById('manual-section');
+    const settimeSection = document.getElementById('set-times');
+    const timerSection = document.getElementById('timed-section');
+
+    const startBtn = document.getElementById("start-timer");
+    const stopBtn = document.getElementById("stop-timer");
+    const liveTimer = document.getElementById("live-timer");
+
+    const startInput = document.getElementById("id_start_time");
+    const endInput = document.getElementById("id_end_time");
+
+    let timerInterval = null;
+    let startTime = null;
+
+    function formatTime(seconds) {
+        const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        return `${hrs}:${mins}:${secs}`;
+    }
+
+    function toggleInputFields() {
+        const selectedMode = document.querySelector('input[name="mode"]:checked');
+        if (!selectedMode) return;
+
+        if (selectedMode.value === 'manual') {
+            manualSection.style.display = 'block';
+            settimeSection.style.display = 'none';
+            timerSection.style.display = 'none';
+        } 
+        else if(selectedMode.value === 'timed'){
+            manualSection.style.display = 'none';
+            settimeSection.style.display = 'block';
+            timerSection.style.display = 'none';
+        }
+        else {
+            manualSection.style.display = 'none';
+            settimeSection.style.display = 'none';
+            timerSection.style.display = 'block';
+        }
+    }
+
+    function startTimer() {
+        startTime = new Date();
+        startInput.value = startTime.toISOString().slice(0, 16);
+        timerInterval = setInterval(() => {
+            const now = new Date();
+            const elapsed = Math.floor((now - startTime) / 1000);
+            liveTimer.innerText = formatTime(elapsed);
+        }, 1000);
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+    }
+
+    function stopTimer() {
+        const endTime = new Date();
+        endInput.value = endTime.toISOString().slice(0, 16);
+        clearInterval(timerInterval);
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+    }
+
+    // Init
+    document.addEventListener('DOMContentLoaded', () => {
+        toggleInputFields();
+        modeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleInputFields);
+        });
+        liveTimer.innerText = "00:00:00";
+    });
+
+    startBtn.addEventListener('click', startTimer);
+    stopBtn.addEventListener('click', stopTimer);
+</script>
+
+{% endblock %}

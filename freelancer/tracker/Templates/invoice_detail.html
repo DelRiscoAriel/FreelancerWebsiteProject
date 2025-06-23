@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .top-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .top-actions a {
+        background: #3366ff;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 6px;
+        text-decoration: none;
+    }
+
+    .top-actions a:hover {
+        background: #254eda;
+    }
+
+    .invoice-grid {
+        display: flex;
+        gap: 40px;
+        align-items: flex-start;
+        margin-bottom: 30px;
+    }
+
+    .invoice-section, .client-section {
+        flex: 1;
+    }
+
+    .client-section {
+        padding: 10px 20px;
+        border-left: 1px solid #ddd;
+        background-color: #f9f9f9;
+    }
+
+    .client-section h3 {
+        margin-top: 0;
+    }
+</style>
+
+<div class="top-bar">
+    <h2>Invoice #{{ invoice.id }} – {{ invoice.project.name }}</h2>
+    <div class="top-actions">
+        <a href="{% url 'export_invoice_pdf' invoice.id %}">📄 Export PDF</a>
+        <a href="{% url 'update_invoice_status' invoice.id %}">✏️ Update Status</a>
+    </div>
+</div>
+
+<div class="invoice-grid">
+    <!-- Left: Invoice Info -->
+    <div class="invoice-section">
+        <p><strong>Status:</strong> {{ invoice.status }}</p>
+        {% if invoice.project.billing_type == 'hourly' %}
+            <p><strong>Billing Type:</strong> Hourly</p>
+            <p><strong>Hourly Rate:</strong> ${{ invoice.project.hourly_rate}}</p>
+        {% else %}
+            <p><strong>Billing Type:</strong> Fixed</p>
+        {% endif %}
+        <p><strong>Total Hours:</strong> {{ invoice.total_hours}}</p>
+        <p><strong>Amount Due:</strong> ${{ invoice.total_amount }}</p>
+        <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
+        <p><strong>Notes:</strong><br>{{ invoice.notes|linebreaks }}</p>
+        <p><strong>Invoice Date:</strong> {{ invoice.created_at }}</p>
+
+        <form method="post" action="{% url 'delete_invoice' invoice.id %}">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #ff4444; color: white;">🗑 Delete Invoice</button>
+        </form>
+    </div>
+
+    <!-- Right: Client Info -->
+    <div class="client-section">
+        <h3>Client Info</h3>
+        <p><strong>Name:</strong> {{ invoice.project.client_name }}</p>
+        <p><strong>Email:</strong> {{ invoice.project.client_email }}</p>
+        <p><strong>Phone:</strong> {{ invoice.project.client_phone }}</p>
+        <p><strong>Address:</strong> {{ invoice.project.client_address}}</p>
+    </div>
+</div>
+
+<h3>Time Entries</h3>
+
+{% if time_entries %}
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+        <tr style="background-color: #f0f0f0;">
+            <th style="padding: 8px; border: 1px solid #ccc;">Date</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Hours</th>
+            <th style="padding: 8px; border: 1px solid #ccc;">Description</th>
+        </tr>
+        {% for entry in time_entries %}
+        <tr>
+            {% if entry.start_time %}
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.start_time|date:"m-d-Y" }}</td>
+            {% else %}
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.created_at|date:"m-d-Y" }}</td>
+            {% endif %}
+            <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.total_hours }}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.description|default:"—" }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% else %}
+    <p>No time entries found for this project.</p>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Your Invoices</h2>
+<a href="{% url 'create_invoice' %}" class="new-project">+ Create Invoice</a>
+
+<ul>
+  {% for invoice in invoices %}
+    <li>
+        <a href="{% url 'invoice_detail' invoice.id %}">
+            Invoice #{{ invoice.id }} | Project: {{ invoice.project.name }} | Status : {{ invoice.status }} |Total: ${{ invoice.total_amount }} | Invoice Date: {{ invoice.created_at|date:"m-d-Y" }} 
+        </a>
+    </li>
+  {% empty %}
+    <li>No invoices yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

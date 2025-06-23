@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Update Status – Invoice #{{ invoice.id }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" style="background-color: #36c; color: white;">Update</button>
+    <a href="{% url 'invoice_detail' invoice.id %}">Cancel</a>
+</form>
+
+{% endblock %}

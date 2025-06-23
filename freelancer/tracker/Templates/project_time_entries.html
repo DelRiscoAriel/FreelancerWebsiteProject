@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+  table {
+    border-collapse: collapse; /* Ensures borders are collapsed into a single border */
+    width: 100%;
+  }
+
+  th, td {
+    border-bottom: 1px solid #ddd; /* Adds a bottom border to each cell */
+    padding: 8px;
+    text-align: left;
+  }
+</style>
+
+<h2>Time Entries for Project: {{ project.name }}</h2>
+
+{% if time_entries %}
+    <table>
+        <thead>
+            <tr>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Manual Hours</th>
+                <th>Total Hours</th>
+                <th>Description</th>
+                {% if project.is_active == True %}
+                    <th>Action</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for entry in time_entries %}
+            <tr>
+                <td>{{ entry.start_time|default:"—" }}</td>
+                <td>{{ entry.end_time|default:"—" }}</td>
+                <td>{{ entry.manual_hours|default:"—" }}</td>
+                <td>{{ entry.total_hours }}</td>
+                <td>{{ entry.description|default:"—" }}</td>
+                <td>
+                    {% if project.is_active == True %}
+                        <form method="post" action="{% url 'delete_time_entry' entry.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" style="background-color:#ff4d4d; color:white; border:none; padding:6px 12px; border-radius:5px;">Delete</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p style="margin-top: 20px; font-weight: bold;">Total Hours Worked: {{ total_hours }}</p>
+{% else %}
+    <p>No time entries recorded yet for this project.</p>
+{% endif %}
+
+{% endblock %}

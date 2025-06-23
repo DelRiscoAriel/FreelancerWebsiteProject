@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.dashboard-container {
+    display: flex;
+    min-height: 80vh;
+}
+
+.sidebar {
+    width: 220px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #ddd;
+}
+
+.sidebar h2 {
+    font-size: 18px;
+    margin-bottom: 30px;
+}
+
+.sidebar nav a {
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+    margin-bottom: 10px;
+    border-radius: 6px;
+}
+
+.sidebar nav a:hover {
+    background-color: #eaeaea;
+}
+
+.main-panel {
+    flex: 1;
+    padding: 30px;
+}
+
+.project-card {
+    border: 1px solid #ddd;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.project-card h3 {
+    margin: 0 0 5px 0;
+}
+
+.project-card p {
+    margin: 3px 0;
+}
+
+.new-project {
+    margin-bottom: 20px;
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #3366ff;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
+</style>
+
+<div class="dashboard-container">
+    <!-- Main Panel -->
+    <div class="main-panel">
+        <h2>Active Projects</h2>
+
+        <a href="{% url 'create_project' %}" class="new-project">Create a Project</a>
+
+        {% if projects %}
+            {% for project in projects %}
+                <div class="project-card" style="position: relative;">
+                    <form method="post" action="{% url 'set_inactive_project' project.id %}" style="position: absolute; top: 15px; right: 15px;">
+                        {% csrf_token %}
+                        <button type="submit" style="background-color: #ff4d4d; color: white; border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer;">
+                            Set As Completed
+                        </button>
+                    </form>
+
+                    <h3>{{ project.name }}</h3>
+                    <p>Client: <strong>{{ project.client_name|default:"—"}}</strong> | {{ project.client_email|default:"—"}} | {{project.client_phone|default:"—"}} | {{ project.client_address|default:"—" }}</p>
+                    <p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
+                    {% if project.billing_type == "hourly" %}
+                    <p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
+                    {% elif project.billing_type == "fixed" %}
+                    <p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
+                    {% endif %}
+                    <p>Start Date: <strong>{{ project.start_date }}</strong></p>
+                    <p><strong><a href="{% url 'track_time' project.id %}">⏱ Open Time Tracker</a></strong></p>
+                    <p><strong><a href="{% url 'project_time_entries' project.id %}">📄 Open Time Entries</a></strong></p>
+                    <br>
+                    <h4><a href="{% url 'project_invoices' project.id %}">📄 Invoices</a></h4>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+<p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
+{% if project.billing_type == "hourly" %}
+<p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
+{% elif project.billing_type == "fixed" %}
+<p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
+{% endif %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Create Invoice for {{ project.name }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Create Invoice</button>
+</form>
+
+<h4>Time Entries That Will Be Included:</h4>
+<ul>
+    {% for entry in time_entries %}
+        <li>{{ entry.start_time|default:entry.created_at|date:"m-d-Y" }} – {{ entry.total_hours }} hrs – {{ entry.description|default:"No description" }}</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'project_invoices' project.id %}">← Cancel</a>
+
+{% endblock %}
