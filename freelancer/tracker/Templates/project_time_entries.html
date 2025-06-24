@@ -37,7 +37,7 @@
                 <td>{{ entry.end_time|default:"—" }}</td>
                 <td>{{ entry.manual_hours|default:"—" }}</td>
                 <td>{{ entry.total_hours }}</td>
-                <td>{{ entry.description|default:"—" }}</td>
+                <td>{{ entry.description|default:"—" }}  {% if project.is_active == True %} <a href="{% url 'edit_time_entry' entry.id %}">✏️ Edit</a> {% endif %}</td> 
                 <td>
                     {% if project.is_active == True %}
                         <form method="post" action="{% url 'delete_time_entry' entry.id %}" style="display:inline;">

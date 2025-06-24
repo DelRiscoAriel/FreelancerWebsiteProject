@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Edit Description for Entry on {{ entry.start_time|date:"m-d-Y" }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="description">Description:</label><br>
+    <textarea name="description" rows="4" cols="60">{{ entry.description }}</textarea><br><br>
+    <button type="submit">Save</button>
+</form>
+
+{% endblock %}

@@ -254,6 +254,19 @@ def invoice_list_view(request):
     return render(request, 'invoice_list.html', {'invoices': invoices})
 
 @login_required
+def edit_time_entry_description(request, entry_id):
+    entry = get_object_or_404(TimeEntry, id=entry_id, project__user=request.user)
+
+    if request.method == 'POST':
+        new_description = request.POST.get('description', '').strip()
+        if new_description:
+            entry.description = new_description
+            entry.save()
+            return redirect('project_time_entries', entry.project.id)
+
+    return render(request, 'edit_time_entry.html', {'entry': entry})
+
+@login_required
 def project_invoices_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
     invoices = project.invoice_set.all()

@@ -33,6 +33,7 @@ urlpatterns = [
     path('projects/<int:project_id>/set_active/', views.set_project_active_view, name='set_active_project'),
     path('projects/<int:project_id>/track/', views.add_time_entry_for_project, name='track_time'),
     path('projects/<int:project_id>/entries/', views.project_time_entries_view, name='project_time_entries'),
+    path('time-entry/<int:entry_id>/edit/', views.edit_time_entry_description, name='edit_time_entry'),
     path('time-entry/<int:entry_id>/delete/', views.delete_time_entry_view, name='delete_time_entry'),
     path('invoices/', views.invoice_list_view, name='invoice_list'),
     #path('invoices/create/', views.create_invoice_view, name='create_invoice'), 
