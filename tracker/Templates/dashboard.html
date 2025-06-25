@@ -66,37 +66,41 @@
 </style>
 
 <div class="dashboard-container">
-    <!-- Main Panel -->
     <div class="main-panel">
-        <h2>Active Projects</h2>
+        <h2>Your Projects</h2>
 
-        <a href="{% url 'create_project' %}" class="new-project">Create a Project</a>
+        <a href="{% url 'create_project' %}" class="new-project">➕ Create a Project</a>
 
-        {% if projects %}
+        {% if projects.object_list %}
             {% for project in projects %}
-                <div class="project-card" style="position: relative;">
-                    <form method="post" action="{% url 'set_inactive_project' project.id %}" style="position: absolute; top: 15px; right: 15px;">
-                        {% csrf_token %}
-                        <button type="submit" style="background-color: #ff4d4d; color: white; border: none; border-radius: 6px; padding: 5px 10px; cursor: pointer;">
-                            Set As Completed
-                        </button>
-                    </form>
-
+                <div class="project-card">
                     <h3>{{ project.name }}</h3>
-                    <p>Client: <strong>{{ project.client_name|default:"—"}}</strong> | {{ project.client_email|default:"—"}} | {{project.client_phone|default:"—"}} | {{ project.client_address|default:"—" }}</p>
-                    <p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
-                    {% if project.billing_type == "hourly" %}
+                    <p>Client: <strong>{{ project.client.name }}</strong></p>
                     <p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
-                    {% elif project.billing_type == "fixed" %}
-                    <p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
-                    {% endif %}
                     <p>Start Date: <strong>{{ project.start_date }}</strong></p>
-                    <p><strong><a href="{% url 'track_time' project.id %}">⏱ Open Time Tracker</a></strong></p>
-                    <p><strong><a href="{% url 'project_time_entries' project.id %}">📄 Open Time Entries</a></strong></p>
-                    <br>
+                    
+                    <p><a href="{% url 'track_time' project.id %}">⏱ Time Tracker</a></p>
+                    <p><a href="{% url 'project_time_entries' project.id %}">📋 Time Entries</a></p>
+
                     <h4><a href="{% url 'project_invoices' project.id %}">📄 Invoices</a></h4>
                 </div>
             {% endfor %}
+        {% else %}
+            <p>You don’t have any projects yet.</p>
+        {% endif %}
+
+        {% if projects.has_other_pages %}
+            <div style="margin-top: 20px;">
+                {% if projects.has_previous %}
+                    <a href="?page={{ projects.previous_page_number }}">← Previous</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Page {{ projects.number }} of {{ projects.paginator.num_pages }}</span>
+
+                {% if projects.has_next %}
+                    <a href="?page={{ projects.next_page_number }}">Next →</a>
+                {% endif %}
+            </div>
         {% endif %}
     </div>
 </div>

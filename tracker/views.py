@@ -1,26 +1,30 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .models import *
 from django.contrib import messages
 from .forms import *
-import requests
+#import requests
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.http import HttpResponse
 from io import BytesIO
+from django.core.paginator import Paginator
 
 def home(request):
     #return render(request, 'base.html')
-    #instance = TimeEntry.objects.get(id=8)
+    #instance = auth_user.objects.get(id=8)
     #instance.delete()
+    #user_to_delete = User.objects.get(username='user')
+    #user_to_delete.delete()
     return redirect('dashboard')
 
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            data = {
+            '''data = {
                 "username": form.cleaned_data['username'],
                 "password": form.cleaned_data['password'],
                 "re_password": form.cleaned_data['re_password'],
@@ -28,11 +32,17 @@ def register_view(request):
             }
             response = requests.post('http://localhost:8000/auth/users/', json=data)
 
-            if response.status_code == 201:
+            if response.status_code == 201:'''
+            try:
+                User.objects.create_user(
+                    username=form.cleaned_data['username'],
+                    email=form.cleaned_data['email'],
+                    password=form.cleaned_data['password']
+                )
                 messages.success(request, "Registration successful! Please log in.")
                 return redirect('loginTemp')
-            else:
-                messages.error(request, f"Registration failed: {response.json()}")
+            except Exception as exc:
+                messages.error(request, f"Registration failed: {exc}")
     else:
         form = RegisterForm()
     return render(request, 'register.html', {'form': form})
@@ -60,8 +70,13 @@ def dashboard_view(request):
     projects = Project.objects.filter(user=request.user).filter(is_active=True).prefetch_related('invoice_set')
     invoices = Invoice.objects.filter(project__user=request.user)
 
+    paginator = Paginator(projects, 5)
+
+    page_number = request.GET.get('page')
+    projects_pag = paginator.get_page(page_number)
+    
     context = {
-        'projects': projects,
+        'projects': projects_pag,
         'invoices': invoices,
     }
     return render(request, 'dashboard.html', context)
@@ -71,8 +86,13 @@ def completed_view(request):
     projects = Project.objects.filter(user=request.user).filter(is_active=False).prefetch_related('invoice_set')
     invoices = Invoice.objects.filter(project__user=request.user)
 
+    paginator = Paginator(projects, 5)
+
+    page_number = request.GET.get('page')
+    projects_pag = paginator.get_page(page_number)
+    
     context = {
-        'projects': projects,
+        'projects': projects_pag,
         'invoices': invoices,
     }
     return render(request, 'completed.html', context)
@@ -266,10 +286,24 @@ def edit_time_entry_description(request, entry_id):
 
     return render(request, 'edit_time_entry.html', {'entry': entry})
 
-@login_required
+'''@login_required
 def project_invoices_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
     invoices = project.invoice_set.all()
+    return render(request, 'project_invoices.html', {
+        'project': project,
+        'invoices': invoices
+    })'''
+
+@login_required
+def project_invoices_view(request, project_id):
+    project = get_object_or_404(Project, id=project_id, user=request.user)
+    invoice_list = project.invoice_set.all().order_by('-created_at')
+
+    paginator = Paginator(invoice_list, 2) 
+    page_number = request.GET.get('page')
+    invoices = paginator.get_page(page_number)
+
     return render(request, 'project_invoices.html', {
         'project': project,
         'invoices': invoices

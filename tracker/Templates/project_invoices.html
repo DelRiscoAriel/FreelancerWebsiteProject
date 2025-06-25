@@ -26,10 +26,25 @@
             {% endfor %}
         </tbody>
     </table>
-{% else %}
+    {% if invoices.has_other_pages %}
+            <div style="margin-top: 20px;">
+                {% if invoices.has_previous %}
+                    <a href="?page={{ invoices.previous_page_number }}">← Previous</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}</span>
+
+                {% if invoices.has_next %}
+                    <a href="?page={{ invoices.next_page_number }}">Next →</a>
+                {% endif %}
+                
+            </div>
+        {% endif %}
+    {% else %}
     <p>No invoices found for this project.</p>
 {% endif %}
 
+<br>
 <div style="display: flex; justify-content: space-between; align-items: center;">
     <a href="{% url 'create_invoice' project.id %}" style="background-color: #3366ff; color: white; padding: 8px 14px; border-radius: 6px; text-decoration: none;">
         ➕ Create Invoice
