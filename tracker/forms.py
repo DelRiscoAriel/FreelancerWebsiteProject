@@ -2,10 +2,31 @@ from django import forms
 from django.contrib.auth.models import User
 from .models import *
 
+class ClientForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = ['name', 'company', 'email', 'phone', 'address']
+        
 class ProjectForm(forms.ModelForm):
+    use_existing_client = forms.BooleanField(required=False, initial=True, label="Use Existing Client")
+    existing_client = forms.ModelChoiceField(queryset=Client.objects.all(), required=False, label="Select Existing Client")
+
+    # Fields for new client
+    client_name = forms.CharField(required=False)
+    client_company = forms.CharField(required=False)
+    client_email = forms.EmailField(required=False)
+    client_phone = forms.CharField(required=False)
+    client_address = forms.CharField(widget=forms.Textarea, required=False)
+    
     class Meta:
         model = Project
-        fields = ['name', 'client_name', 'client_email', 'client_phone', 'client_address','billing_type', 'hourly_rate', 'fixed_rate']
+        fields = ['name', 'client', 'billing_type', 'hourly_rate', 'fixed_rate']
+        
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['existing_client'].queryset = Client.objects.filter(user=user)
    
     def clean(self):
         cleaned_data = super().clean()

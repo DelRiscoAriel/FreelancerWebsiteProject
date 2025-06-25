@@ -9,18 +9,6 @@
     Project Name<br>
     {{ form.name }}<br><br>
 
-    Client Name<br>
-    {{ form.client_name }}<br><br>
-
-    Client Phone Number<br>
-    {{ form.client_phone }}<br><br>
-
-    Client Email Address<br>
-    {{ form.client_email }}<br><br>
-
-    Client Physical Address<br>
-    {{ form.client_address }}<br><br>
-
     {{ form.billing_type.label_tag }}<br>
     {{ form.billing_type }}<br><br>
 
@@ -31,11 +19,26 @@
 
     <div id="fixed-rate-field" style="display:none;">
         {{ form.fixed_rate.label_tag }}<br>
-        {{ form.fixed_rate }}<br><br>
+        {{ form.fixed_rate }}<br>
     </div>
 
     {{ form.start_date.label_tag }}<br>
-    {{ form.start_date }}<br><br>
+    {{ form.start_date }}
+
+    <h2>Client</h2>
+    <p class="no-style-label">  {{ form.use_existing_client }} Use Existing Client</p>
+
+    <div id="existing-client-fields">
+        {{ form.existing_client.label_tag }} {{ form.existing_client }}
+    </div>
+
+    <div id="new-client-fields" style="display: none;">
+        {{ form.client_name.label_tag }} {{ form.client_name }}<br>
+        {{ form.client_company.label_tag }} {{ form.client_company }}<br>
+        {{ form.client_email.label_tag }} {{ form.client_email }}<br>
+        {{ form.client_phone.label_tag }} {{ form.client_phone }}<br>
+        {{ form.client_address.label_tag }} {{ form.client_address }}
+    </div>
 
     <button type="submit">Save Project</button>
 </form>
@@ -44,6 +47,10 @@
     const billingTypeSelect = document.getElementById("id_billing_type");
     const hourlyField = document.getElementById("hourly-rate-field");
     const fixedField = document.getElementById("fixed-rate-field");
+
+    const checkbox = document.querySelector('#id_use_existing_client');
+    const existingFields = document.getElementById('existing-client-fields');
+    const newClientFields = document.getElementById('new-client-fields');
 
     function toggleRateFields() {
         if (billingTypeSelect.value === "hourly") {
@@ -57,6 +64,25 @@
 
     billingTypeSelect.addEventListener("change", toggleRateFields);
     document.addEventListener("DOMContentLoaded", toggleRateFields);
+
+    checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+        existingFields.style.display = 'block';
+        newClientFields.style.display = 'none';
+    } else {
+        existingFields.style.display = 'none';
+        newClientFields.style.display = 'block';
+    }
+    });
+
+    // Initial state
+    if (checkbox.checked) {
+    existingFields.style.display = 'block';
+    newClientFields.style.display = 'none';
+    } else {
+    existingFields.style.display = 'none';
+    newClientFields.style.display = 'block';
+    }
 </script>
 
 {% endblock %}

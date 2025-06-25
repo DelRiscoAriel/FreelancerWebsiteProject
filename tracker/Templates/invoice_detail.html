@@ -71,7 +71,7 @@
         <p><strong>Notes:</strong><br>{{ invoice.notes|linebreaks }}</p>
         <p><strong>Invoice Date:</strong> {{ invoice.created_at }}</p>
 
-        <form method="post" action="{% url 'delete_invoice' invoice.id %}">
+        <form method="get" action="{% url 'delete_invoice' invoice.id %}">
             {% csrf_token %}
             <button type="submit" style="background-color: #ff4444; color: white;">🗑 Delete Invoice</button>
         </form>
@@ -80,10 +80,11 @@
     <!-- Right: Client Info -->
     <div class="client-section">
         <h3>Client Info</h3>
-        <p><strong>Name:</strong> {{ invoice.project.client_name }}</p>
-        <p><strong>Email:</strong> {{ invoice.project.client_email }}</p>
-        <p><strong>Phone:</strong> {{ invoice.project.client_phone }}</p>
-        <p><strong>Address:</strong> {{ invoice.project.client_address}}</p>
+        <p><strong>Name:</strong> {{ invoice.project.client.name|default:"—"  }}</p>
+        <p><strong>Company:</strong> {{ invoice.project.client.company|default:"—" }}</p>
+        <p><strong>Email:</strong> {{ invoice.project.client.email|default:"—"  }}</p>
+        <p><strong>Phone:</strong> {{ invoice.project.client.phone|default:"—"  }}</p>
+        <p><strong>Address:</strong> {{ invoice.project.client.address|default:"—"  }}</p>
     </div>
 </div>
 

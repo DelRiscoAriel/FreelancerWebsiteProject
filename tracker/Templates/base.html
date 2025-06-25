@@ -3,6 +3,7 @@
 {% load static %}
 <head>
     <!-- <link rel="stylesheet" href="{% static 'css/style.css' %}"> -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
     
 <style>
@@ -43,6 +44,7 @@ body {
     background: none;
     cursor: pointer;
     border-radius: 6px;
+    font-size: larger;
 }
 
 .sidebar nav a:hover,
@@ -64,6 +66,16 @@ form input, form select, form textarea {
     border-radius: 6px;
     font-size: 14px;
     margin-bottom: 15px;
+}
+
+.no-style-label {
+    border: 1px solid #ddd;
+    padding: 6px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    width: 17%; /* Override the default style */
 }
 
 form button {
@@ -105,8 +117,8 @@ form button {
             <h2>Freelancer Tracker</h2>
             <nav>
                 <a href="{% url 'dashboard' %}">🏠 Dashboard</a>
-                <a href="{% url 'completed' %}"> Completed </a>
-                <!-- <a href="{% url 'invoice_list' %}">🧾 Invoices</a> -->
+                <a href="{% url 'completed' %}"><i class="fas fa-check-circle"></i> Completed Projects</a>
+                <a href="{% url 'client_list' %}"><i class="fa-solid fa-address-book"></i> Clients</a>
                 <a href="{% url 'account' %}">👤 Account</a>
             </nav>
 

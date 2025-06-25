@@ -11,28 +11,20 @@ from xhtml2pdf import pisa
 from django.http import HttpResponse
 from io import BytesIO
 from django.core.paginator import Paginator
+from django.db.models import Q
 
 def home(request):
     #return render(request, 'base.html')
-    #instance = auth_user.objects.get(id=8)
-    #instance.delete()
-    #user_to_delete = User.objects.get(username='user')
-    #user_to_delete.delete()
+    '''instance = Client.objects.get(id=3)
+    instance.delete()
+    user_to_delete = User.objects.get(username='user')
+    user_to_delete.delete()'''
     return redirect('dashboard')
 
 def register_view(request):
     if request.method == 'POST':
         form = RegisterForm(request.POST)
         if form.is_valid():
-            '''data = {
-                "username": form.cleaned_data['username'],
-                "password": form.cleaned_data['password'],
-                "re_password": form.cleaned_data['re_password'],
-                "email": form.cleaned_data['email'],
-            }
-            response = requests.post('http://localhost:8000/auth/users/', json=data)
-
-            if response.status_code == 201:'''
             try:
                 User.objects.create_user(
                     username=form.cleaned_data['username'],
@@ -67,8 +59,22 @@ def logout_view(request):
 
 @login_required
 def dashboard_view(request):
+    query = request.GET.get('q', '')
+    
     projects = Project.objects.filter(user=request.user).filter(is_active=True).prefetch_related('invoice_set')
     invoices = Invoice.objects.filter(project__user=request.user)
+    
+    if query:
+        projects = projects.filter(
+            Q(name__icontains=query) |
+            Q(client__name__icontains=query) |
+            Q(client__company__icontains=query) |
+            Q(client__email__icontains=query) |
+            Q(client__phone__icontains=query) |
+            Q(client__address__icontains=query) |
+            Q(start_date__icontains=query)
+        )
+
 
     paginator = Paginator(projects, 5)
 
@@ -78,14 +84,28 @@ def dashboard_view(request):
     context = {
         'projects': projects_pag,
         'invoices': invoices,
+        'query': query,
     }
     return render(request, 'dashboard.html', context)
 
 @login_required
 def completed_view(request):
+    query = request.GET.get('q', '')
+    
     projects = Project.objects.filter(user=request.user).filter(is_active=False).prefetch_related('invoice_set')
     invoices = Invoice.objects.filter(project__user=request.user)
 
+    if query:
+        projects = projects.filter(
+            Q(name__icontains=query) |
+            Q(client__name__icontains=query) |
+            Q(client__company__icontains=query) |
+            Q(client__email__icontains=query) |
+            Q(client__phone__icontains=query) |
+            Q(client__address__icontains=query) |
+            Q(start_date__icontains=query)
+        )
+        
     paginator = Paginator(projects, 5)
 
     page_number = request.GET.get('page')
@@ -94,9 +114,19 @@ def completed_view(request):
     context = {
         'projects': projects_pag,
         'invoices': invoices,
+        'query': query,
     }
     return render(request, 'completed.html', context)
 
+@login_required
+def client_projects_view(request, client_id):
+    client = get_object_or_404(Client, id=client_id, user=request.user)
+    projects = Project.objects.filter(client=client, user=request.user)
+    return render(request, 'client_projects.html', {
+        'client': client,
+        'projects': projects
+    })
+    
 @login_required
 def account_view(request):
     user = request.user
@@ -118,18 +148,54 @@ def account_view(request):
 
     return render(request, 'account.html', {'form': form})
 
+@login_required
+def client_list_view(request):
+    clients = Client.objects.filter(user=request.user)
+    
+    paginator = Paginator(clients, 20)
+
+    page_number = request.GET.get('page')
+    clients_pag = paginator.get_page(page_number)
+    
+    return render(request, 'client_list.html', {'clients': clients_pag})
+
+@login_required
+def edit_client_view(request, client_id):
+    client = get_object_or_404(Client, id=client_id)
+    if request.method == 'POST':
+        form = ClientForm(request.POST, instance=client)
+        if form.is_valid():
+            form.save()
+            return redirect('client_list')
+    else:
+        form = ClientForm(instance=client)
+    return render(request, 'edit_client.html', {'form': form, 'client': client})
     
 @login_required
 def create_project_view(request):
     if request.method == 'POST':
-        form = ProjectForm(request.POST)
+        form = ProjectForm(request.POST, user=request.user)
         if form.is_valid():
             project = form.save(commit=False)
             project.user = request.user
+            
+            if form.cleaned_data['use_existing_client']:
+                project.client = form.cleaned_data['existing_client']
+            else:
+                new_client = Client.objects.create(
+                    user=request.user,
+                    name=form.cleaned_data['client_name'],
+                    company=form.cleaned_data['client_company'],
+                    email=form.cleaned_data['client_email'],
+                    phone=form.cleaned_data['client_phone'],
+                    address=form.cleaned_data['client_address']
+                )
+                project.client = new_client
+                
             project.save()
-            return redirect('dashboard')  # Or wherever you want to send them
+            return redirect('dashboard') 
     else:
-        form = ProjectForm()
+        form = ProjectForm(user=request.user)
     return render(request, 'create_project.html', {'form': form})
 
 @login_required
@@ -138,7 +204,7 @@ def set_project_inactive_view(request, project_id):
     if request.method == 'POST':
         project.is_active=False
         project.save()
-    return redirect('dashboard')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 def set_project_active_view(request, project_id):
@@ -146,7 +212,7 @@ def set_project_active_view(request, project_id):
     if request.method == 'POST':
         project.is_active=True
         project.save()
-    return redirect('completed')
+    return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required
 def add_time_entry_for_project(request, project_id):
@@ -286,15 +352,6 @@ def edit_time_entry_description(request, entry_id):
 
     return render(request, 'edit_time_entry.html', {'entry': entry})
 
-'''@login_required
-def project_invoices_view(request, project_id):
-    project = get_object_or_404(Project, id=project_id, user=request.user)
-    invoices = project.invoice_set.all()
-    return render(request, 'project_invoices.html', {
-        'project': project,
-        'invoices': invoices
-    })'''
-
 @login_required
 def project_invoices_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
@@ -338,8 +395,9 @@ def update_invoice_status_view(request, invoice_id):
 def delete_invoice_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
     if request.method == 'POST':
+        id = invoice.project.id
         invoice.delete()
-        return redirect('invoice_list')
+        return redirect('project_invoices', id)
     return render(request, 'confirm_delete_invoice.html', {'invoice': invoice})
 
 @login_required

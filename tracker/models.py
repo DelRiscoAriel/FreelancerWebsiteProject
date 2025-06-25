@@ -3,7 +3,20 @@ from django.db import models
 from django.utils.timezone import now
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date, timedelta
- 
+
+from django.db import models
+
+class Client(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE,null=True, blank=True)
+    name = models.CharField(max_length=100)
+    company = models.CharField(max_length=100, blank=True)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+    
 class Project(models.Model):
     BILLING_CHOICES = [
         ('hourly', 'Hourly Rate'),
@@ -12,10 +25,7 @@ class Project(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
-    client_name = models.CharField(max_length=100, default="")
-    client_email = models.EmailField(default="")
-    client_phone = models.CharField(max_length=100, default="")
-    client_address = models.CharField(max_length=100, default="")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, null=True, blank=True)
     billing_type = models.CharField(max_length=10, choices=BILLING_CHOICES, default='hourly')
     hourly_rate = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     fixed_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)

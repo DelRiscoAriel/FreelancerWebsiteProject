@@ -68,9 +68,12 @@
 <div class="dashboard-container">
     <!-- Main Panel -->
     <div class="main-panel">
-        <h2>Completed Projects</h2>
+        <form method="get" style="margin-bottom: 20px;">
+            <input type="text" name="q" placeholder="Search by project name, client info, or date(yyyy-mm-dd)" value="{{ query }}" style="width: 370px; padding: 6px;">
+            <button type="submit">🔍 Search</button>
+        </form>
 
-        <a href="{% url 'create_project' %}" class="new-project">Create a Project</a>
+        <h2>Completed Projects</h2>
 
         {% if projects %}
             {% for project in projects %}
@@ -83,7 +86,7 @@
                     </form>
 
                     <h3>{{ project.name }}</h3>
-                    <p>Client: <strong>{{ project.client_name|default:"—"}}</strong> | {{ project.client_email|default:"—"}} | {{project.client_phone|default:"—"}} | {{ project.client_address|default:"—" }}</p>
+                    <p>Client: <strong>{{ project.client.name|default:"—"}}</strong> | {{ project.client.email|default:"—"}} | {{ project.client.phone|default:"—"}} | {{ project.client.address|default:"—" }}</p>
                     <p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
                     {% if project.billing_type == "hourly" %}
                     <p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
@@ -101,13 +104,13 @@
         {% if projects.has_other_pages %}
             <div style="margin-top: 20px;">
                 {% if projects.has_previous %}
-                    <a href="?page={{ projects.previous_page_number }}">← Previous</a>
+                    <a href="?page={{ projects.previous_page_number }}&q={{ query }}">← Previous</a>
                 {% endif %}
 
                 <span style="margin: 0 10px;">Page {{ projects.number }} of {{ projects.paginator.num_pages }}</span>
 
                 {% if projects.has_next %}
-                    <a href="?page={{ projects.next_page_number }}">Next →</a>
+                    <a href="?page={{ projects.next_page_number }}&q={{ query }}">Next →</a>
                 {% endif %}
             </div>
         {% endif %}

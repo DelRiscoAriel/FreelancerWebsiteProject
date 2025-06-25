@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Client List</h2>
+
+<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+    <thead>
+        <tr>
+            <th style="border: 1px solid #ccc; padding: 8px;">Name</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Company</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Email</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Phone</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Address</th>
+            <th style="border: 1px solid #ccc; padding: 8px;">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+        <tr>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.name }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.company }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.email }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.phone }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.address }}</td>
+            <td style="border: 1px solid #ccc; padding: 8px;">
+                <a href="{% url 'edit_client' client.id %}">Edit</a><br>
+                <a href="{% url 'client_projects' client.id %}">View Projects</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;">No clients found.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if clients.has_other_pages %}
+    <div style="margin-top: 20px;">
+        {% if clients.has_previous %}
+            <a href="?page={{ clients.previous_page_number }}">← Previous</a>
+        {% endif %}
+
+        <span style="margin: 0 10px;">Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span>
+
+        {% if clients.has_next %}
+            <a href="?page={{ clients.next_page_number }}">Next →</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}
