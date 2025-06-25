@@ -1,0 +1,13 @@
+{
+    "builds": [{
+        "src": "freelancer/wsgi.py",
+        "use": "@vercel/python",
+        "config": { "maxLamdaSize": "15mb", "runtime": "python.3.12.10"}
+    }],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "freelancer/wsgi.py"
+        }
+    ]
+}
