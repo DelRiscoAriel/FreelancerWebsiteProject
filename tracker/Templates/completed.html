@@ -97,6 +97,20 @@
                 </div>
             {% endfor %}
         {% endif %}
+
+        {% if projects.has_other_pages %}
+            <div style="margin-top: 20px;">
+                {% if projects.has_previous %}
+                    <a href="?page={{ projects.previous_page_number }}">← Previous</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Page {{ projects.number }} of {{ projects.paginator.num_pages }}</span>
+
+                {% if projects.has_next %}
+                    <a href="?page={{ projects.next_page_number }}">Next →</a>
+                {% endif %}
+            </div>
+        {% endif %}
     </div>
 </div>
 
