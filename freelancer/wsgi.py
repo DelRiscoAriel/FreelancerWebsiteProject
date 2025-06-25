@@ -15,4 +15,4 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'freelancer.settings')
 
 application = get_wsgi_application()
 
-trash = application
+app = application
