@@ -150,14 +150,25 @@ def account_view(request):
 
 @login_required
 def client_list_view(request):
+    query = request.GET.get('q', '')
+    
     clients = Client.objects.filter(user=request.user)
     
+    if query:
+        clients = clients.filter(
+            Q(name__icontains=query) |
+            Q(company__icontains=query) |
+            Q(email__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(address__icontains=query) 
+        )
+        
     paginator = Paginator(clients, 20)
 
     page_number = request.GET.get('page')
     clients_pag = paginator.get_page(page_number)
     
-    return render(request, 'client_list.html', {'clients': clients_pag})
+    return render(request, 'client_list.html', {'clients': clients_pag, 'query': query,})
 
 @login_required
 def edit_client_view(request, client_id):

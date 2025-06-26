@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% block content %}
 
+<form method="get" style="margin-bottom: 20px;">
+    <input type="text" name="q" placeholder="Search clinet info" value="{{ query }}" style="width: 370px; padding: 6px;">
+    <button type="submit">🔍 Search</button>
+</form>
+
 <h2>Client List</h2>
 
 <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
@@ -35,13 +40,13 @@
 {% if clients.has_other_pages %}
     <div style="margin-top: 20px;">
         {% if clients.has_previous %}
-            <a href="?page={{ clients.previous_page_number }}">← Previous</a>
+            <a href="?page={{ clients.previous_page_number }}&q={{ query }}">← Previous</a>
         {% endif %}
 
         <span style="margin: 0 10px;">Page {{ clients.number }} of {{ clients.paginator.num_pages }}</span>
 
         {% if clients.has_next %}
-            <a href="?page={{ clients.next_page_number }}">Next →</a>
+            <a href="?page={{ clients.next_page_number }}&q={{ query }}">Next →</a>
         {% endif %}
     </div>
 {% endif %}
