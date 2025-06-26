@@ -8,26 +8,26 @@
 
 <h2>Client List</h2>
 
-<table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+<table>
     <thead>
         <tr>
-            <th style="border: 1px solid #ccc; padding: 8px;">Name</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Company</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Email</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Phone</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Address</th>
-            <th style="border: 1px solid #ccc; padding: 8px;">Actions</th>
+            <th>Name</th>
+            <th>Company</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
         {% for client in clients %}
         <tr>
-            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.name }}</td>
-            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.company }}</td>
-            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.email }}</td>
-            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.phone }}</td>
-            <td style="border: 1px solid #ccc; padding: 8px;">{{ client.address }}</td>
-            <td style="border: 1px solid #ccc; padding: 8px;">
+            <td>{{ client.name }}</td>
+            <td>{{ client.company }}</td>
+            <td>{{ client.email }}</td>
+            <td>{{ client.phone }}</td>
+            <td>{{ client.address }}</td>
+            <td>
                 <a href="{% url 'edit_client' client.id %}">Edit</a><br>
                 <a href="{% url 'client_projects' client.id %}">View Projects</a>
             </td>

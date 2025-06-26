@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from .models import *
 from django.contrib import messages
 from .forms import *
-#import requests
+from datetime import date
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 from django.http import HttpResponse
@@ -347,8 +347,24 @@ def create_invoice_project_view(request, project_id):
     
 @login_required
 def invoice_list_view(request):
-    invoices = Invoice.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'invoice_list.html', {'invoices': invoices})
+    status = request.GET.get('status', '')
+    invoices = Invoice.objects.filter(project__user=request.user).order_by('due_date')
+
+    if status:
+        invoices = invoices.filter(status=status)
+    else: 
+        invoices = invoices.filter(status='Draft')
+
+    paginator = Paginator(invoices, 20)
+
+    page_number = request.GET.get('page')
+    invoices_pag = paginator.get_page(page_number)
+    
+    return render(request, 'invoice_list.html', {
+        'invoices': invoices_pag,
+        'status': status,
+        'today': date.today(),
+    })
 
 @login_required
 def edit_time_entry_description(request, entry_id):
@@ -368,7 +384,7 @@ def project_invoices_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
     invoice_list = project.invoice_set.all().order_by('-created_at')
 
-    paginator = Paginator(invoice_list, 2) 
+    paginator = Paginator(invoice_list, 20) 
     page_number = request.GET.get('page')
     invoices = paginator.get_page(page_number)
 

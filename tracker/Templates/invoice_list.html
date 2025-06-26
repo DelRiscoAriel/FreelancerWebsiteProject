@@ -1,17 +1,84 @@
 {% extends 'base.html' %}
 {% block content %}
-<h2>Your Invoices</h2>
-<a href="{% url 'create_invoice' %}" class="new-project">+ Create Invoice</a>
 
-<ul>
-  {% for invoice in invoices %}
-    <li>
-        <a href="{% url 'invoice_detail' invoice.id %}">
-            Invoice #{{ invoice.id }} | Project: {{ invoice.project.name }} | Status : {{ invoice.status }} |Total: ${{ invoice.total_amount }} | Invoice Date: {{ invoice.created_at|date:"m-d-Y" }} 
-        </a>
-    </li>
-  {% empty %}
-    <li>No invoices yet.</li>
-  {% endfor %}
-</ul>
+<style>
+    table {
+        width: 130%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: large;
+    }
+    tr {
+        background-color: white;
+    }
+    th {
+        padding: 10px; border: 1px solid #ccc;
+    }
+    td {
+        padding: 8px; border: 1px solid #ccc;
+    }
+</style>
+
+<form method="get" style="margin-bottom: 20px;">
+  <label for="status">Filter by status:</label>
+  <select name="status" id="status" onchange="this.form.submit()">
+    <option value="Draft" {% if status == 'Draft' %}selected{% endif %}>Draft</option>
+    <option value="Sent" {% if status == 'Sent' %}selected{% endif %}>Sent</option>
+    <option value="Paid" {% if status == 'Paid' %}selected{% endif %}>Paid</option>
+  </select>
+</form>
+
+<h2>
+  {% if status == 'Draft' %}Draft Invoices
+  {% elif status == 'Sent' %}Sent Invoices
+  {% elif status == 'Paid' %}Paid Invoices
+  {% else %}Draft
+  {% endif %}
+</h2>
+
+{% if invoices %}
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Project</th>
+        <th>Total</th>
+        <th>Invoice Date</th>
+        <th>Due Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for invoice in invoices %}
+      <tr>
+        <td>{{ invoice.id }}</td>
+        <td>{{ invoice.project.name }}</td>
+        <td>${{ invoice.total_amount }}</td>
+        <td>{{ invoice.created_at|date:"m-d-Y" }}</td>
+        <td style="{% if invoice.due_date and invoice.due_date < today and invoice.status != 'Paid' %}color:red;{% endif %}">
+          {{ invoice.due_date|date:"m-d-Y" }}
+        </td>
+        <td><a href="{% url 'invoice_detail' invoice.id %}">View</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if invoices.has_other_pages %}
+            <div style="margin-top: 20px;">
+                {% if invoices.has_previous %}
+                    <a href="?page={{ invoices.previous_page_number }}&status={{ status }}">← Previous</a>
+                {% endif %}
+
+                <span style="margin: 0 10px;">Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}</span>
+
+                {% if invoices.has_next %}
+                    <a href="?page={{ invoices.next_page_number }}&status={{ status }}">Next →</a>
+                {% endif %}
+                
+            </div>
+        {% endif %}
+{% else %}
+  <p>No invoices found for this status.</p>
+{% endif %}
+
 {% endblock %}

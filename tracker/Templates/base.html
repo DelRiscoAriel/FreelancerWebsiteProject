@@ -108,6 +108,22 @@ form button {
     border-left: 4px solid #4caf50;
     background-color: #f0fdf0;
 }
+
+table {
+    width: 130%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: large;
+}
+tr {
+    background-color: white;
+}
+th {
+    padding: 10px; border: 1px solid #ccc;
+}
+td {
+    padding: 8px; border: 1px solid #ccc;
+}
 </style>
     
 <body>
@@ -118,6 +134,7 @@ form button {
             <nav>
                 <a href="{% url 'dashboard' %}">🏠 Dashboard</a>
                 <a href="{% url 'completed' %}"><i class="fas fa-check-circle"></i> Completed Projects</a>
+                <a href="{% url 'invoice_list' %}"><i class="fa-solid fa-file-invoice-dollar"></i> Invoices </a>
                 <a href="{% url 'client_list' %}"><i class="fa-solid fa-address-book"></i> Clients</a>
                 <a href="{% url 'account' %}">👤 Account</a>
             </nav>
