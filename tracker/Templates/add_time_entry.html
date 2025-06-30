@@ -60,6 +60,8 @@
 <form method="post" id="time-entry-form">
     {% csrf_token %}
 
+    <p>{{ form.non_field_errors }}</p>
+
     <div class="radio-group form-group">
         <label><strong>Time Entry Mode:</strong></label><br>
         {% for radio in form.mode %}
@@ -128,6 +130,17 @@
     function toggleInputFields() {
         const selectedMode = document.querySelector('input[name="mode"]:checked');
         if (!selectedMode) return;
+
+        // Clear all fields
+        document.getElementById('id_manual_hours').value = '';
+        document.getElementById('id_start_time').value = '';
+        document.getElementById('id_end_time').value = '';
+        liveTimer.innerText = "00:00:00";
+
+        // Reset timer button states
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        clearInterval(timerInterval);
 
         if (selectedMode.value === 'manual') {
             manualSection.style.display = 'block';

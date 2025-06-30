@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import date, timedelta
 
@@ -81,5 +82,15 @@ class TimeEntry(models.Model):
             return hours
         return 0
 
+    def clean(self):
+        # Validate manual hours
+        if self.manual_hours is not None and self.manual_hours < 0:
+            raise ValidationError("Manual hours cannot be negative.")
+
+        # Validate calculated hours
+        if self.start_time and self.end_time:
+            if self.end_time < self.start_time:
+                raise ValidationError("End time cannot be earlier than start time.")
+            
     def __str__(self):
         return f"{self.project.name} - {self.total_hours()} hrs"

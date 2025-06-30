@@ -15,7 +15,7 @@ from django.db.models import Q
 
 def home(request):
     #return render(request, 'base.html')
-    '''instance = Client.objects.get(id=5)
+    '''instance = Client.objects.get(id=6)
     instance.delete()
     user_to_delete = User.objects.get(username='user')
     user_to_delete.delete()'''
@@ -234,6 +234,7 @@ def add_time_entry_for_project(request, project_id):
         if form.is_valid():
             time_entry = form.save(commit=False)
             time_entry.project = project
+            time_entry.full_clean()
             time_entry.save()
             return redirect('dashboard')
     else:
