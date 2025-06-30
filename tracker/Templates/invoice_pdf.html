@@ -84,12 +84,16 @@
         {% if invoice.project.billing_type == 'hourly' %}
             <p><strong>Billing Type:</strong> Hourly</p>
             <p><strong>Hourly Rate:</strong> ${{ invoice.project.hourly_rate }}</p>
+            <p><strong>Total Hours:</strong> {{ invoice.total_hours }}</p>
+            <p><strong>Total Amount:</strong> ${{ invoice.total_amount }}</p>
+            <p><strong>Amount Paid:</strong> ${{ total_paid }}</p>
+            <p><strong>Amount Due:</strong> ${{ total_unpaid }}</p>
         {% else %}
             <p><strong>Billing Type:</strong> Fixed</p>
+            <p><strong>Total Hours:</strong> {{ invoice.total_hours }}</p>
+            <p><strong>Total Amount Due:</strong> ${{ invoice.total_amount }}</p>
         {% endif %}
-
-        <p><strong>Total Hours:</strong> {{ invoice.total_hours }}</p>
-        <p><strong>Amount Due:</strong> ${{ invoice.total_amount }}</p>
+         
         <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
 
         <p><strong>Notes:</strong> {{ invoice.notes }}</p>
@@ -106,19 +110,39 @@
                 <th>Date</th>
                 <th>Hours</th>
                 <th>Description</th>
+                {% if invoice.project.billing_type == 'hourly' %}
+                    <th>Amount</th>
+                {% endif %}
+                <th>Payment</th>
             </tr>
         </thead>
         <tbody>
             {% for entry in time_entries %}
-            <tr>
-                {% if entry.start_time %}
-                    <td>{{ entry.start_time|date:"m-d-Y" }}</td>
+                {% if invoice.project.billing_type == 'hourly' %}
+                <tr>
+                    {% if entry.start_time %}
+                        <td>{{ entry.entry.start_time|date:"m-d-Y" }}</td>
+                    {% else %}
+                        <td>{{ entry.entry.created_at|date:"m-d-Y" }}</td>
+                    {% endif %}
+                    <td>{{ entry.entry.total_hours }}</td>
+                    <td>{{ entry.entry.description|default:"—" }}</td>
+                    <td>{{ entry.amount }}</td>
+                    <td>{{ entry.entry.paid }}</td>
+                </tr>
                 {% else %}
-                    <td>{{ entry.created_at|date:"m-d-Y" }}</td>
+                <tr>
+                    {% if entry.start_time %}
+                        <td>{{ entry.start_time|date:"m-d-Y" }}</td>
+                    {% else %}
+                        <td>{{ entry.created_at|date:"m-d-Y" }}</td>
+                    {% endif %}
+                    <td>{{ entry.total_hours }}</td>
+                    <td>{{ entry.description|default:"—" }}</td>
+                    <td>{{ entry.paid }}</td>
+                </tr>
                 {% endif %}
-                <td>{{ entry.total_hours }}</td>
-                <td>{{ entry.description|default:"—" }}</td>
-            </tr>
+            
             {% endfor %}
         </tbody>
     </table>

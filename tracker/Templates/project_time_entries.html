@@ -25,6 +25,8 @@
                 <th>Manual Hours</th>
                 <th>Total Hours</th>
                 <th>Description</th>
+                <th>Invoice</th>
+                <th>Payment</th>
                 {% if project.is_active == True %}
                     <th>Action</th>
                 {% endif %}
@@ -38,12 +40,16 @@
                 <td>{{ entry.manual_hours|default:"—" }}</td>
                 <td>{{ entry.total_hours }}</td>
                 <td>{{ entry.description|default:"—" }}  {% if project.is_active == True %} <a href="{% url 'edit_time_entry' entry.id %}">✏️ Edit</a> {% endif %}</td> 
+                <td># {{ entry.invoice.id|default:"—" }}</td>
+                <td>{{ entry.paid }}</td>
                 <td>
                     {% if project.is_active == True %}
-                        <form method="post" action="{% url 'delete_time_entry' entry.id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" style="background-color:#ff4d4d; color:white; border:none; padding:6px 12px; border-radius:5px;">Delete</button>
-                        </form>
+                        {% if entry.paid != 'Paid' %}
+                            <form method="post" action="{% url 'delete_time_entry' entry.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" style="background-color:#ff4d4d; color:white; border:none; padding:6px 12px; border-radius:5px;">Delete</button>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 </td>
             </tr>

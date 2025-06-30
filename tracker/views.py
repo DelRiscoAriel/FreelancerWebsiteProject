@@ -15,7 +15,7 @@ from django.db.models import Q
 
 def home(request):
     #return render(request, 'base.html')
-    '''instance = Client.objects.get(id=3)
+    '''instance = Client.objects.get(id=5)
     instance.delete()
     user_to_delete = User.objects.get(username='user')
     user_to_delete.delete()'''
@@ -291,7 +291,7 @@ def project_time_entries_view(request, project_id):
         'total_hours': total_hours,
     })
     
-@login_required
+'''@login_required
 def create_invoice_view(request):
     if request.method == 'POST':
         form = InvoiceForm(request.POST)
@@ -309,16 +309,19 @@ def create_invoice_view(request):
                 hourly_rate = invoice.project.fixed_rate or Decimal('0.00')
                 invoice.total_amount = hourly_rate
             invoice.save()
+            for entry in time_entries:
+                entry.invoice = get_object_or_404(Invoice, id=invoice.id, user=request.user)
+                entry.save()
             return redirect('invoice_list')
     else:
         form = InvoiceForm()
 
-    return render(request, 'create_invoice.html', {'form': form})
+    return render(request, 'create_invoice.html', {'form': form})'''
 
 @login_required
 def create_invoice_project_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
-    time_entries = TimeEntry.objects.filter(project=project)
+    time_entries = TimeEntry.objects.filter(project=project).filter(invoice=None)
 
     if request.method == 'POST':
         form = InvoiceForm(request.POST)
@@ -333,8 +336,9 @@ def create_invoice_project_view(request, project_id):
                 hourly_rate = invoice.project.fixed_rate or Decimal('0.00')
                 invoice.total_amount = hourly_rate
             invoice.save()
-            invoice.save()
-            #invoice.time_entries.set(time_entries)
+            for entry in time_entries:
+                entry.invoice = get_object_or_404(Invoice, id=invoice.id, user=request.user)
+                entry.save()
             return redirect('invoice_detail', invoice.id)
     else:
         form = InvoiceForm()
@@ -344,7 +348,7 @@ def create_invoice_project_view(request, project_id):
         'project': project,
         'time_entries': time_entries
     })
-    
+
 @login_required
 def invoice_list_view(request):
     status = request.GET.get('status', '')
@@ -382,8 +386,8 @@ def edit_time_entry_description(request, entry_id):
 @login_required
 def project_invoices_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
-    invoice_list = project.invoice_set.all().order_by('-created_at')
-
+    invoice_list = project.invoice_set.all().order_by('due_date')
+        
     paginator = Paginator(invoice_list, 20) 
     page_number = request.GET.get('page')
     invoices = paginator.get_page(page_number)
@@ -396,19 +400,62 @@ def project_invoices_view(request, project_id):
 @login_required
 def invoice_detail_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
-    time_entries = TimeEntry.objects.filter(project=invoice.project)
-    return render(request, 'invoice_detail.html', {
+    time_entries = TimeEntry.objects.filter(project=invoice.project).filter(invoice=invoice.id)
+    
+    if invoice.project.billing_type == 'hourly':
+        entry_details = []
+        total_paid = 0
+        total_unpaid = 0
+
+        rate = invoice.project.hourly_rate or Decimal('0.00')
+
+        invoice.total_hours = sum(te.total_hours() for te in time_entries)
+        formatted_total_amount = f"{invoice.total_hours * rate:.2f}"
+        invoice.total_amount = formatted_total_amount
+        invoice.save()
+        for entry in time_entries:
+            hours = entry.total_hours() or 0
+            amount = hours * rate
+            if entry.paid == "Paid":
+                total_paid += amount
+            else:
+                total_unpaid += amount
+            formatted_amount = f"{amount:.2f}"
+            entry_details.append({
+                'entry': entry,
+                'hours': hours,
+                'amount': formatted_amount
+            })
+        
+        formatted_total_unpaid = f"{total_unpaid:.2f}"
+        formatted_total_paid = f"{total_paid:.2f}"
+        
+        return render(request, 'invoice_detail.html', {
+            'invoice': invoice,
+            'entry_details': entry_details,
+            'total_paid': formatted_total_paid,
+            'total_unpaid': formatted_total_unpaid,
+        })
+    else:
+        return render(request, 'invoice_detail.html', {
         'invoice': invoice,
-        'time_entries': time_entries
-    })
+        'entry_details': time_entries
+        })
+        
 
 @login_required
 def update_invoice_status_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    time_entries = TimeEntry.objects.filter(project=invoice.project)
+    
     if request.method == 'POST':
         form = InvoiceStatusForm(request.POST, instance=invoice)
         if form.is_valid():
             form.save()
+            if invoice.status == 'Paid':
+                for entries in time_entries:
+                    entries.paid = "Paid"
+                    entries.save()
             return redirect('invoice_detail', invoice_id=invoice.id)
     else:
         form = InvoiceStatusForm(instance=invoice)
@@ -421,8 +468,12 @@ def update_invoice_status_view(request, invoice_id):
 @login_required
 def delete_invoice_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    time_entries = TimeEntry.objects.filter(project=invoice.project)
     if request.method == 'POST':
         id = invoice.project.id
+        for entry in time_entries:
+            entry.invoice = None
+            entry.save()
         invoice.delete()
         return redirect('project_invoices', id)
     return render(request, 'confirm_delete_invoice.html', {'invoice': invoice})
@@ -430,11 +481,56 @@ def delete_invoice_view(request, invoice_id):
 @login_required
 def export_invoice_pdf(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
-    time_entries = TimeEntry.objects.filter(project=invoice.project)
+    time_entries = TimeEntry.objects.filter(project=invoice.project).filter(invoice=invoice.id)
 
-    template = get_template("invoice_pdf.html")
-    html = template.render({'invoice': invoice, 'time_entries': time_entries})
-    
+    if invoice.project.billing_type == 'hourly':
+        entry_details = []
+        total_paid = 0
+        total_unpaid = 0
+
+        rate = invoice.project.hourly_rate or Decimal('0.00')
+
+        invoice.total_hours = sum(te.total_hours() for te in time_entries)
+        formatted_total_amount = f"{invoice.total_hours * rate:.2f}"
+        invoice.total_amount = formatted_total_amount
+        invoice.save()
+        for entry in time_entries:
+            hours = entry.total_hours() or 0
+            amount = hours * rate
+            if entry.paid == "Paid":
+                total_paid += amount
+            else:
+                total_unpaid += amount
+            formatted_amount = f"{amount:.2f}"
+            entry_details.append({
+                'entry': entry,
+                'hours': hours,
+                'amount': formatted_amount
+            })
+        
+        formatted_total_unpaid = f"{total_unpaid:.2f}"
+        formatted_total_paid = f"{total_paid:.2f}"
+        
+        money = []
+        money.append({
+            'total_paid': formatted_total_paid,
+            'total_unpaid': formatted_total_unpaid,
+        })
+        
+        template = get_template("invoice_pdf.html")
+        html = template.render({
+            'invoice': invoice,
+            'time_entries': entry_details,
+            'total_paid': formatted_total_paid,
+            'total_unpaid': formatted_total_unpaid,
+        })
+    else:
+        template = get_template("invoice_pdf.html")
+        html = template.render({
+        'invoice': invoice,
+        'time_entries': time_entries
+        })
+        
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="invoice_{invoice.id}.pdf"'
 

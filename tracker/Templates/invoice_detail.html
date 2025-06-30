@@ -58,7 +58,7 @@
 <div class="invoice-grid">
     <!-- Left: Invoice Info -->
     <div class="invoice-section">
-        <p><strong>Status:</strong> {{ invoice.status }}</p>
+        <h3>Status: {{ invoice.status }}</h3>
         {% if invoice.project.billing_type == 'hourly' %}
             <p><strong>Billing Type:</strong> Hourly</p>
             <p><strong>Hourly Rate:</strong> ${{ invoice.project.hourly_rate}}</p>
@@ -66,7 +66,11 @@
             <p><strong>Billing Type:</strong> Fixed</p>
         {% endif %}
         <p><strong>Total Hours:</strong> {{ invoice.total_hours}}</p>
-        <p><strong>Amount Due:</strong> ${{ invoice.total_amount }}</p>
+        <p><strong>Total Amount:</strong> ${{ invoice.total_amount }}</p>
+        {% if invoice.project.billing_type == 'hourly' %}
+            <p><strong>Paid Amount:</strong> ${{ total_paid }}</p>
+            <p><strong>Amount Due:</strong> ${{ total_unpaid }}</p>
+        {% endif %}
         <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
         <p><strong>Notes:</strong><br>{{ invoice.notes|linebreaks }}</p>
         <p><strong>Invoice Date:</strong> {{ invoice.created_at }}</p>
@@ -90,22 +94,39 @@
 
 <h3>Time Entries</h3>
 
-{% if time_entries %}
+{% if entry_details %}
     <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
         <tr style="background-color: #f0f0f0;">
             <th style="padding: 8px; border: 1px solid #ccc;">Date</th>
             <th style="padding: 8px; border: 1px solid #ccc;">Hours</th>
             <th style="padding: 8px; border: 1px solid #ccc;">Description</th>
-        </tr>
-        {% for entry in time_entries %}
-        <tr>
-            {% if entry.start_time %}
-                <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.start_time|date:"m-d-Y" }}</td>
-            {% else %}
-                <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.created_at|date:"m-d-Y" }}</td>
+            {% if invoice.project.billing_type == 'hourly' %}
+                <th style="padding: 8px; border: 1px solid #ccc;">Amount</th>
             {% endif %}
-            <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.total_hours }}</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">{{ entry.description|default:"—" }}</td>
+            <th style="padding: 8px; border: 1px solid #ccc;">Payment</th>
+        </tr>
+        {% for entries in entry_details %}
+        <tr>
+            {% if invoice.project.billing_type == 'hourly' %}
+                {% if entry.start_time %}
+                    <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.entry.start_time|date:"m-d-Y" }}</td>
+                {% else %}
+                    <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.entry.created_at|date:"m-d-Y" }}</td>
+                {% endif %}
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.entry.total_hours }}</td>
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.entry.description|default:"—" }}</td>
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.amount }}</td>
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.entry.paid }}</td>   
+            {% else %}
+                {% if entry.start_time %}
+                    <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.start_time|date:"m-d-Y" }}</td>
+                {% else %}
+                    <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.created_at|date:"m-d-Y" }}</td>
+                {% endif %}
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.total_hours }}</td>
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.description|default:"—" }}</td>
+                <td style="padding: 8px; border: 1px solid #ccc;">{{ entries.paid }}</td>  
+            {% endif %}
         </tr>
         {% endfor %}
     </table>
