@@ -15,7 +15,7 @@ from django.db.models import Q
 
 def home(request):
     #return render(request, 'base.html')
-    '''instance = Client.objects.get(id=6)
+    '''instance = Client.objects.get(id=7)
     instance.delete()
     user_to_delete = User.objects.get(username='user')
     user_to_delete.delete()'''
@@ -352,13 +352,35 @@ def create_invoice_project_view(request, project_id):
 
 @login_required
 def invoice_list_view(request):
+    project = request.GET.get('project', '')
+    client = request.GET.get('client', '')
+    invoice_start = request.GET.get('invoice_start', '')
+    invoice_due = request.GET.get('invoice_due', '')
     status = request.GET.get('status', '')
     invoices = Invoice.objects.filter(project__user=request.user).order_by('due_date')
 
+    if project:
+        invoices = invoices.filter(
+            Q(project__name__icontains=project) 
+        )
+    if client:
+        invoices = invoices.filter(
+            Q(project__client__name__icontains=client) |
+            Q(project__client__company__icontains=client) |
+            Q(project__client__email__icontains=client) |
+            Q(project__client__phone__icontains=client) |
+            Q(project__client__address__icontains=client) 
+        )
+    if invoice_start:
+        invoices = invoices.filter(
+            Q(created_at__icontains=invoice_start)
+        )
+    if invoice_due:
+        invoices = invoices.filter(
+            Q(due_date__icontains=invoice_due)
+        )
     if status:
         invoices = invoices.filter(status=status)
-    else: 
-        invoices = invoices.filter(status='Draft')
 
     paginator = Paginator(invoices, 20)
 
@@ -368,6 +390,10 @@ def invoice_list_view(request):
     return render(request, 'invoice_list.html', {
         'invoices': invoices_pag,
         'status': status,
+        'project': project,
+        'client' : client,
+        'invoice_start' : invoice_start,
+        'invoice_due' : invoice_due,
         'today': date.today(),
     })
 

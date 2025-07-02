@@ -20,21 +20,23 @@
 </style>
 
 <form method="get" style="margin-bottom: 20px;">
+  <label for="status">Projet:&emsp;&emsp;</label>
+  <input type="text" name="project" placeholder="Search by project name" value="{{ project }}" style="width: 370px; padding: 6px;"><br>
+  <label for="status">Client Info: </label>
+  <input type="text" name="client" placeholder="Search by client info" value="{{ client }}" style="width: 370px; padding: 6px;"><br>
+  <label for="status">Start Date:&nbsp;</label>
+  <input type="date" name="invoice_start" placeholder="Search by client info" value="{{ invoice_start }}" style="width: 370px; padding: 6px;"><br>
+  <label for="status">Due Date:&nbsp;&nbsp;</label>
+  <input type="date" name="invoice_due" placeholder="Search by client info" value="{{ invoice_due }}" style="width: 370px; padding: 6px;"><br>
   <label for="status">Filter by status:</label>
-  <select name="status" id="status" onchange="this.form.submit()">
+  <select name="status" id="status">
+    <option value="" {% if status == '' %}selected{% endif %}>All</option>
     <option value="Draft" {% if status == 'Draft' %}selected{% endif %}>Draft</option>
     <option value="Sent" {% if status == 'Sent' %}selected{% endif %}>Sent</option>
     <option value="Paid" {% if status == 'Paid' %}selected{% endif %}>Paid</option>
   </select>
+  <button type="submit">🔍 Search</button><br>
 </form>
-
-<h2>
-  {% if status == 'Draft' %}Draft Invoices
-  {% elif status == 'Sent' %}Sent Invoices
-  {% elif status == 'Paid' %}Paid Invoices
-  {% else %}Draft Invoices
-  {% endif %}
-</h2>
 
 {% if invoices %}
   <table>
@@ -42,7 +44,9 @@
       <tr>
         <th>ID</th>
         <th>Project</th>
+        <th>Status</th>
         <th>Total</th>
+        <th>Client</th>
         <th>Invoice Date</th>
         <th>Due Date</th>
         <th>Actions</th>
@@ -53,7 +57,9 @@
       <tr>
         <td>{{ invoice.id }}</td>
         <td>{{ invoice.project.name }}</td>
+        <td>{{ invoice.status}}</td>
         <td>${{ invoice.total_amount }}</td>
+        <td>{{ invoice.project.client}}</td>
         <td>{{ invoice.created_at|date:"m-d-Y" }}</td>
         <td style="{% if invoice.due_date and invoice.due_date < today and invoice.status != 'Paid' %}color:red;{% endif %}">
           {{ invoice.due_date|date:"m-d-Y" }}
@@ -66,13 +72,13 @@
   {% if invoices.has_other_pages %}
             <div style="margin-top: 20px;">
                 {% if invoices.has_previous %}
-                    <a href="?page={{ invoices.previous_page_number }}&status={{ status }}">← Previous</a>
+                    <a href="?page={{ invoices.previous_page_number }}&project={{ project }}&client={{ client }}&invoice_start={{ invoice_start }}&invoice_due={{ invoice_due }}&status={{ status }}">← Previous</a>
                 {% endif %}
 
                 <span style="margin: 0 10px;">Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}</span>
 
                 {% if invoices.has_next %}
-                    <a href="?page={{ invoices.next_page_number }}&status={{ status }}">Next →</a>
+                    <a href="?page={{ invoices.next_page_number }}&project={{ project }}&client={{ client }}&invoice_start={{ invoice_start }}&invoice_due={{ invoice_due }}&status={{ status }}">Next →</a>
                 {% endif %}
                 
             </div>

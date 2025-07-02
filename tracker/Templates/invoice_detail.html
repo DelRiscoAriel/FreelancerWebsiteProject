@@ -89,6 +89,10 @@
         <p><strong>Email:</strong> {{ invoice.project.client.email|default:"—"  }}</p>
         <p><strong>Phone:</strong> {{ invoice.project.client.phone|default:"—"  }}</p>
         <p><strong>Address:</strong> {{ invoice.project.client.address|default:"—"  }}</p>
+        <form method="get" action="{% url 'edit_client' invoice.project.client.id %}">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #3366ff; color: white;">Edit Client</button>
+        </form>
     </div>
 </div>
 
