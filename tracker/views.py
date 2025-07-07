@@ -15,10 +15,12 @@ from django.db.models import Q
 
 def home(request):
     #return render(request, 'base.html')
-    '''instance = Client.objects.get(id=7)
+    '''instance = Client.objects.get(id=9)
     instance.delete()
-    user_to_delete = User.objects.get(username='user')
-    user_to_delete.delete()'''
+    user_to_delete = User.objects.get(username='test')
+    user_to_delete.delete()
+    instance2 = Project.objects.get(id=3)
+    instance2.delete()'''
     return redirect('dashboard')
 
 def register_view(request):
@@ -184,6 +186,7 @@ def edit_client_view(request, client_id):
     
 @login_required
 def create_project_view(request):
+    clients = Client.objects.filter(user=request.user).count()
     if request.method == 'POST':
         form = ProjectForm(request.POST, user=request.user)
         if form.is_valid():
@@ -202,12 +205,13 @@ def create_project_view(request):
                     address=form.cleaned_data['client_address']
                 )
                 project.client = new_client
-                
+            
+            project.full_clean()    
             project.save()
             return redirect('dashboard') 
     else:
         form = ProjectForm(user=request.user)
-    return render(request, 'create_project.html', {'form': form})
+    return render(request, 'create_project.html', {'form': form, 'clients': clients})
 
 @login_required
 def set_project_inactive_view(request, project_id):

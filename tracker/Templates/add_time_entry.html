@@ -1,8 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Track Time for Project: {{ project.name }}</h2>
-
 <style>
     .form-group {
         margin-bottom: 15px;
@@ -56,6 +54,8 @@
         cursor: pointer;
     }
 </style>
+
+<h2>Track Time for Project: {{ project.name }}</h2>
 
 <form method="post" id="time-entry-form">
     {% csrf_token %}

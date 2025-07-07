@@ -35,7 +35,7 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
-
+    
 def get_future_date():
     return date.today() + timedelta(days=7)
 

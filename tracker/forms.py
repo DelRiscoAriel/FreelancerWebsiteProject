@@ -26,6 +26,7 @@ class ProjectForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
         if user:
+            self.fields['existing_client'].empty_label = None
             self.fields['existing_client'].queryset = Client.objects.filter(user=user)
    
     def clean(self):

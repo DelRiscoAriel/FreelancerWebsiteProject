@@ -29,9 +29,14 @@
     <p class="no-style-label">  {{ form.use_existing_client }} Use Existing Client</p>
 
     <div id="existing-client-fields">
-        {{ form.existing_client.label_tag }} {{ form.existing_client }}
+        {% if clients > 0 %}
+            {{ form.existing_client.label_tag }} {{ form.existing_client }}
+        {% else %}
+            <h3>There are no existing clients</h3>
+        {% endif %}
     </div>
 
+    <br>
     <div id="new-client-fields" style="display: none;">
         {{ form.client_name.label_tag }} {{ form.client_name }}<br>
         {{ form.client_company.label_tag }} {{ form.client_company }}<br>
