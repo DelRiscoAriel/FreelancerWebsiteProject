@@ -151,6 +151,17 @@ def account_view(request):
     return render(request, 'account.html', {'form': form})
 
 @login_required
+def delete_account(request):
+    if request.method == 'POST':
+        user = request.user
+        logout(request)  # log the user out first
+        user.delete()    # delete the user from DB
+        messages.success(request, "Your account has been deleted.")
+        return redirect('home')  # or wherever you want to send them
+
+    return render(request, 'delete_account.html')
+
+@login_required
 def client_list_view(request):
     query = request.GET.get('q', '')
     

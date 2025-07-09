@@ -67,6 +67,7 @@
         {{ form.confirm_password }}
 
         <button type="submit">Save Changes</button>
+        <a href="{% url 'delete_account' %}" style="color:red;">Delete My Account</a>
     </form>
 
     {% if messages %}

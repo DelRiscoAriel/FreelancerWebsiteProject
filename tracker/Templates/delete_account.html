@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Delete Account</h2>
+  <h2 style="color: red;">⚠️ This action is irreversible. All your data will be lost.</h2>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" style="background: red; color: white;">Yes, delete my account</button>
+    <a href="{% url 'dashboard' %}">Cancel</a>
+  </form>
+{% endblock %}
