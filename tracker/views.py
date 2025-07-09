@@ -352,9 +352,9 @@ def create_invoice_project_view(request, project_id):
                 hourly_rate = invoice.project.fixed_rate or Decimal('0.00')
                 invoice.total_amount = hourly_rate
             invoice.save()
-            for entry in time_entries:
+            '''for entry in time_entries:
                 entry.invoice = get_object_or_404(Invoice, id=invoice.id, user=request.user)
-                entry.save()
+                entry.save()'''
             return redirect('invoice_detail', invoice.id)
     else:
         form = InvoiceForm()
