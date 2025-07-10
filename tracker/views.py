@@ -545,7 +545,7 @@ def update_invoice_status_view(request, invoice_id):
 def delete_invoice_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
     #invoice = Invoice.objects.get(id=invoice_id, user=request.user)
-    time_entries = TimeEntry.objects.filter(project=invoice.project)
+    time_entries = TimeEntry.objects.filter(invoice=invoice_id)
     if request.method == 'POST':
         id = invoice.project.id
         for entry in time_entries:
