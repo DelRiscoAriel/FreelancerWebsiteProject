@@ -351,10 +351,11 @@ def create_invoice_project_view(request, project_id):
             else:
                 hourly_rate = invoice.project.fixed_rate or Decimal('0.00')
                 invoice.total_amount = hourly_rate
+            invoice.user = request.user
             invoice.save()
             for entry in time_entries:
-                #entry.invoice = get_object_or_404(Invoice, id=invoice.id, user=request.user)
-                entry = Invoice.objects.get(id=invoice.id, user=request.user)
+                entry.invoice = get_object_or_404(Invoice, id=invoice.id, user=request.user)
+                #entry = Invoice.objects.get(id=invoice.id, user=request.user)
                 entry.save()
             return redirect('invoice_detail', invoice.id)
     else:
@@ -442,8 +443,8 @@ def project_invoices_view(request, project_id):
     
 @login_required
 def invoice_detail_view(request, invoice_id):
-    #invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
-    invoice = Invoice.objects.get(id=invoice_id, user=request.user)
+    invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    #invoice = Invoice.objects.get(id=invoice_id, user=request.user)
     time_entries = TimeEntry.objects.filter(project=invoice.project).filter(invoice=invoice.id)
     
     if invoice.project.billing_type == 'hourly':
@@ -489,8 +490,8 @@ def invoice_detail_view(request, invoice_id):
 
 @login_required
 def update_invoice_status_view(request, invoice_id):
-    #invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
-    invoice = Invoice.objects.get(id=invoice_id, user=request.user)
+    invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    #invoice = Invoice.objects.get(id=invoice_id, user=request.user)
     time_entries = TimeEntry.objects.filter(project=invoice.project)
     
     if request.method == 'POST':
@@ -512,8 +513,8 @@ def update_invoice_status_view(request, invoice_id):
 
 @login_required
 def delete_invoice_view(request, invoice_id):
-    #invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
-    invoice = Invoice.objects.get(id=invoice_id, user=request.user)
+    invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    #invoice = Invoice.objects.get(id=invoice_id, user=request.user)
     time_entries = TimeEntry.objects.filter(project=invoice.project)
     if request.method == 'POST':
         id = invoice.project.id
@@ -526,8 +527,8 @@ def delete_invoice_view(request, invoice_id):
 
 @login_required
 def export_invoice_pdf(request, invoice_id):
-    #invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
-    invoice = Invoice.objects.get(id=invoice_id, user=request.user)
+    invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    #invoice = Invoice.objects.get(id=invoice_id, user=request.user)
     time_entries = TimeEntry.objects.filter(project=invoice.project).filter(invoice=invoice.id)
 
     if invoice.project.billing_type == 'hourly':
