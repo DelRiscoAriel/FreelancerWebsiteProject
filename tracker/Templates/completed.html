@@ -89,10 +89,12 @@
                     <p>Client: <strong>{{ project.client.name|default:"—"}}</strong> | {{ project.client.email|default:"—"}} | {{ project.client.phone|default:"—"}} | {{ project.client.address|default:"—" }}</p>
                     <p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
                     {% if project.billing_type == "hourly" %}
-                    <p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
+                        <p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
                     {% elif project.billing_type == "fixed" %}
-                    <p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
+                        <p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
                     {% endif %}
+                    <p>Total Hours: <strong>{{ project.total_hours|default:"0.00" }}</strong></p>
+                    <p>Total Amount: <strong>${{ project.total_amount|default:"0.00" }}</strong></p>
                     <p>Start Date: <strong>{{ project.start_date }}</strong></p>
                     <p><strong><a href="{% url 'project_time_entries' project.id %}">📄 Open Time Entries</a></strong></p>
                     <br>

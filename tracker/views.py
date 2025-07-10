@@ -11,7 +11,7 @@ from xhtml2pdf import pisa
 from django.http import HttpResponse
 from io import BytesIO
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, Sum, Value
 
 def home(request):
     #return render(request, 'base.html')
@@ -95,8 +95,14 @@ def completed_view(request):
     query = request.GET.get('q', '')
     
     projects = Project.objects.filter(user=request.user).filter(is_active=False).prefetch_related('invoice_set')
+    for pro in projects:
+        if pro.billing_type == 'hourly':
+            projects = projects.annotate(total_amount=Sum('invoice__total_amount'))
+        else:
+            projects = projects.annotate(total_amount=Value(pro.fixed_rate))
+    projects = projects.annotate(total_hours=Sum('invoice__total_hours'))
     invoices = Invoice.objects.filter(project__user=request.user)
-
+        
     if query:
         projects = projects.filter(
             Q(name__icontains=query) |
@@ -227,9 +233,27 @@ def create_project_view(request):
 @login_required
 def set_project_inactive_view(request, project_id):
     project = get_object_or_404(Project, id=project_id, user=request.user)
-    if request.method == 'POST':
-        project.is_active=False
-        project.save()
+    invoices = Invoice.objects.filter(project=project_id, user=request.user)
+    time_entries = TimeEntry.objects.filter(project=project_id)
+    
+    paid = True
+    for inv in invoices:
+        if inv.status != 'Paid':
+            paid = False
+    for te in time_entries:
+        if te.paid != 'Paid':
+            paid = False
+    
+    if paid:
+        messege_text = f"Project {project.name} has been moved to Completed"
+        messages.success(request, messege_text)
+        if request.method == 'POST':
+            project.is_active=False
+            project.save()
+    else:
+        messege_text = f"Project {project.name} has Unpaid Time Entries or Invoices"
+        messages.error(request, messege_text)
+    
     return redirect(request.META.get('HTTP_REFERER'))
 
 @login_required
@@ -369,6 +393,7 @@ def create_invoice_project_view(request, project_id):
 
 @login_required
 def invoice_list_view(request):
+    invoice = request.GET.get('invoice', '')
     project = request.GET.get('project', '')
     client = request.GET.get('client', '')
     invoice_start = request.GET.get('invoice_start', '')
@@ -376,6 +401,10 @@ def invoice_list_view(request):
     status = request.GET.get('status', '')
     invoices = Invoice.objects.filter(project__user=request.user).order_by('due_date')
 
+    if invoice:
+        invoices = invoices.filter(
+            Q(id__icontains=invoice) 
+        )
     if project:
         invoices = invoices.filter(
             Q(project__name__icontains=project) 
@@ -407,6 +436,7 @@ def invoice_list_view(request):
     return render(request, 'invoice_list.html', {
         'invoices': invoices_pag,
         'status': status,
+        'invoice' : invoice,
         'project': project,
         'client' : client,
         'invoice_start' : invoice_start,
@@ -492,7 +522,7 @@ def invoice_detail_view(request, invoice_id):
 def update_invoice_status_view(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
     #invoice = Invoice.objects.get(id=invoice_id, user=request.user)
-    time_entries = TimeEntry.objects.filter(project=invoice.project)
+    time_entries = TimeEntry.objects.filter(invoice=invoice_id)
     
     if request.method == 'POST':
         form = InvoiceStatusForm(request.POST, instance=invoice)

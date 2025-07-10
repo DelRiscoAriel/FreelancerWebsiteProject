@@ -20,6 +20,8 @@
 </style>
 
 <form method="get" style="margin-bottom: 20px;">
+  <label for="status">Invoice ID:</label>
+  <input type="text" name="invoice" placeholder="Search by invoice ID" value="{{ invoice }}" style="width: 370px; padding: 6px;"><br>
   <label for="status">Projet:&emsp;&emsp;</label>
   <input type="text" name="project" placeholder="Search by project name" value="{{ project }}" style="width: 370px; padding: 6px;"><br>
   <label for="status">Client Info: </label>
@@ -72,13 +74,13 @@
   {% if invoices.has_other_pages %}
             <div style="margin-top: 20px;">
                 {% if invoices.has_previous %}
-                    <a href="?page={{ invoices.previous_page_number }}&project={{ project }}&client={{ client }}&invoice_start={{ invoice_start }}&invoice_due={{ invoice_due }}&status={{ status }}">← Previous</a>
+                    <a href="?page={{ invoices.previous_page_number }}&invoice={{ invoice }}&project={{ project }}&client={{ client }}&invoice_start={{ invoice_start }}&invoice_due={{ invoice_due }}&status={{ status }}">← Previous</a>
                 {% endif %}
 
                 <span style="margin: 0 10px;">Page {{ invoices.number }} of {{ invoices.paginator.num_pages }}</span>
 
                 {% if invoices.has_next %}
-                    <a href="?page={{ invoices.next_page_number }}&project={{ project }}&client={{ client }}&invoice_start={{ invoice_start }}&invoice_due={{ invoice_due }}&status={{ status }}">Next →</a>
+                    <a href="?page={{ invoices.next_page_number }}&invoice={{ invoice }}&project={{ project }}&client={{ client }}&invoice_start={{ invoice_start }}&invoice_due={{ invoice_due }}&status={{ status }}">Next →</a>
                 {% endif %}
                 
             </div>

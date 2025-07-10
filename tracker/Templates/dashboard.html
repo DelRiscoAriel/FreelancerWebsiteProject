@@ -67,11 +67,20 @@
 
 <div class="dashboard-container">
     <div class="main-panel">
+        
         <form method="get" style="margin-bottom: 20px;">
             <input type="text" name="q" placeholder="Search by project name, client info, or date(yyyy-mm-dd)" value="{{ query }}" style="width: 370px; padding: 6px;">
             <button type="submit">🔍 Search</button>
         </form>
-        
+
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <p><strong>{{ message }}</strong></p>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
         <h2>Your Projects</h2>
 
         <a href="{% url 'create_project' %}" class="new-project">➕ Create a Project</a>
