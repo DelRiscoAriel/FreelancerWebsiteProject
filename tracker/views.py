@@ -441,7 +441,8 @@ def project_invoices_view(request, project_id):
     
 @login_required
 def invoice_detail_view(request, invoice_id):
-    invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    #invoice = get_object_or_404(Invoice, id=invoice_id, user=request.user)
+    invoice = Invoice.objects.get(id=invoice_id)
     time_entries = TimeEntry.objects.filter(project=invoice.project).filter(invoice=invoice.id)
     
     if invoice.project.billing_type == 'hourly':
