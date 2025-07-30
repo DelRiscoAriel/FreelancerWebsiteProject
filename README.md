@@ -1,4 +1,4 @@
-# 🧾 Freelancer Invoice & Time Tracker – Backend (Django)
+# 🧾 Freelancer Invoice & Time Tracker 
 
 A full-featured freelance business tool that helps independent professionals log time, generate invoices, and manage clients—all in one clean, easy-to-use system. This project was built using Django and Django REST Framework, with PDF generation.
 
