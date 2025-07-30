@@ -94,3 +94,5 @@ class TimeEntry(models.Model):
             
     def __str__(self):
         return f"{self.project.name} - {self.total_hours()} hrs"
+
+
