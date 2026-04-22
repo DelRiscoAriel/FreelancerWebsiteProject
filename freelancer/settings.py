@@ -81,15 +81,15 @@ WSGI_APPLICATION = 'freelancer.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgresql://postgres:Workingshr$$2026@db.mqnzxxwsqlnvomdlfpfb.supabase.co:5432/postgres',
-        conn_max_age=600,
-        ssl_require=True # Recommended for Supabase
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'postgres',
+        'USER': 'postgres',  
+        'PASSWORD': 'Workingshr$$2026',
+        'HOST': 'db.mqnzxxwsqlnvomdlfpfb.supabase.co',
+        'PORT': '5432',
+    }
 }
-
-#database_url = os.environ.get("DATABASE_URL")
-#DATABASES["default"] = dj_database_url.parse("postgresql://freelancer_django_database_user:lSmYAIyvTIPEZnT2A3UfrPf6PY6i5kEK@dpg-d1n7ghfdiees73es9cmg-a.oregon-postgres.render.com/freelancer_django_database")
 
 #postgresql://freelancer_django_database_user:lSmYAIyvTIPEZnT2A3UfrPf6PY6i5kEK@dpg-d1n7ghfdiees73es9cmg-a.oregon-postgres.render.com/freelancer_django_database
 
