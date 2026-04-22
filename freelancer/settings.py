@@ -85,11 +85,11 @@ WSGI_APPLICATION = 'freelancer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),  
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST'),
-        'PORT': config('DB_PORT'),
+        'NAME': 'postgres',
+        'USER': 'postgres',  
+        'PASSWORD': 'Workingshr$$2026',
+        'HOST': 'db.mqnzxxwsqlnvomdlfpfb.supabase.co'
+        'PORT': '5432',
     }
 }
 
