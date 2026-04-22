@@ -86,12 +86,16 @@
             <p><strong>Hourly Rate:</strong> ${{ invoice.project.hourly_rate }}</p>
             <p><strong>Total Hours:</strong> {{ invoice.total_hours }}</p>
             <p><strong>Total Amount:</strong> ${{ invoice.total_amount }}</p>
-            <p><strong>Amount Paid:</strong> ${{ total_paid }}</p>
-            <p><strong>Amount Due:</strong> ${{ total_unpaid }}</p>
+            <p><strong>Tax Rate:</strong> ${{ tax_rate }}</p>
+            <p><strong>Tax Amount:</strong> ${{ invoice.tax_amount }}</p>
+            <p><strong>Take Home Amount:</strong> ${{ invoice.take_home_amount }}</p>
         {% else %}
             <p><strong>Billing Type:</strong> Fixed</p>
             <p><strong>Total Hours:</strong> {{ invoice.total_hours }}</p>
-            <p><strong>Total Amount Due:</strong> ${{ invoice.total_amount }}</p>
+            <p><strong>Total Amount:</strong> ${{ invoice.total_amount }}</p>
+            <p><strong>Tax Rate:</strong> ${{ tax_rate }}</p>
+            <p><strong>Tax Amount:</strong> ${{ invoice.tax_amount }}</p>
+            <p><strong>Take Home Amount:</strong> ${{ invoice.take_home_amount }}</p>
         {% endif %}
          
         <p><strong>Due Date:</strong> {{ invoice.due_date }}</p>
