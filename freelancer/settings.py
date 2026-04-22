@@ -11,19 +11,20 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import dj_database_url
 import psycopg2
-from decouple import config
+from dotenv import load_dotenv
 import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = 'django-insecure-v4b)3g8j*kuqvnr=j7!##%18&nxpj)js7p97xx!ezdjc&lni@v'
 #SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -85,13 +86,14 @@ WSGI_APPLICATION = 'freelancer.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',  
-        'PASSWORD': 'Workingshr$$2026',
-        'HOST': 'db.mqnzxxwsqlnvomdlfpfb.supabase.co',
-        'PORT': '5432',
     }
 }
+
+# Fetch variables
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+# Connect to the database
+connection = psycopg2.connect(DATABASE_URL)
 
 #database_url = os.environ.get("DATABASE_URL")
 #DATABASES["default"] = dj_database_url.parse("postgresql://freelancer_django_database_user:lSmYAIyvTIPEZnT2A3UfrPf6PY6i5kEK@dpg-d1n7ghfdiees73es9cmg-a.oregon-postgres.render.com/freelancer_django_database")
