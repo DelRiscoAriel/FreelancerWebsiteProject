@@ -11,14 +11,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import dj_database_url
 import psycopg2
-from dotenv import load_dotenv
 import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -84,16 +81,12 @@ WSGI_APPLICATION = 'freelancer.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-    }
+    'default': dj_database_url.config(
+        default='postgresql://postgres:Workingshr$$2026@db.mqnzxxwsqlnvomdlfpfb.supabase.co:5432/postgres',
+        conn_max_age=600,
+        ssl_require=True # Recommended for Supabase
+    )
 }
-
-# Fetch variables
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-# Connect to the database
-connection = psycopg2.connect(DATABASE_URL)
 
 #database_url = os.environ.get("DATABASE_URL")
 #DATABASES["default"] = dj_database_url.parse("postgresql://freelancer_django_database_user:lSmYAIyvTIPEZnT2A3UfrPf6PY6i5kEK@dpg-d1n7ghfdiees73es9cmg-a.oregon-postgres.render.com/freelancer_django_database")
