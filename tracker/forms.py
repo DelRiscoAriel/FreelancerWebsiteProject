@@ -33,10 +33,10 @@ class ProjectForm(forms.ModelForm):
         cleaned_data = super().clean()
         billing_type = cleaned_data.get("billing_type")
 
-        if billing_type == 'hourly' and not cleaned_data.get("hourly_rate"):
-            self.add_error("hourly_rate", "Hourly rate is required for hourly billing.")
-        if billing_type == 'fixed' and not cleaned_data.get("fixed_rate"):
-            self.add_error("fixed_rate", "Fixed rate is required for fixed billing.")
+        #if billing_type == 'hourly' and not cleaned_data.get("hourly_rate"):
+        #    self.add_error("hourly_rate", "Hourly rate is required for hourly billing.")
+        #if billing_type == 'fixed' and not cleaned_data.get("fixed_rate"):
+        #    self.add_error("fixed_rate", "Fixed rate is required for fixed billing.")
         
 class RegisterForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput())

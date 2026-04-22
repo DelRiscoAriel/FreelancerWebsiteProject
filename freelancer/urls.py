@@ -47,6 +47,8 @@ urlpatterns = [
     path('invoices/<int:invoice_id>/update-status/', views.update_invoice_status_view, name='update_invoice_status'),
     path('invoices/<int:invoice_id>/delete/', views.delete_invoice_view, name='delete_invoice'), 
     path('invoices/<int:invoice_id>/pdf/', views.export_invoice_pdf, name='export_invoice_pdf'), 
+    path('project/<int:project_id>/update-rate/', views.update_project_rates, name='update_project_rates'),
+    path('projects/<int:project_id>/edit/', views.edit_project_view, name='edit_project'),
     path('admin/', admin.site.urls),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),

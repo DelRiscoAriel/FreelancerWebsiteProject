@@ -9,10 +9,12 @@
             <tr>
                 <th>Invoice ID</th>
                 <th>Status</th>
-                <th>Total Amount</th>
-                <th>Invoice Date</th>
-                <th>Due Date</th>
-                <th>Actions</th>
+                <th style="width: 120px;">Total Amount</th>
+                <th style="width: 110px;">Tax Amount</th>
+                <th style="width: 170px;">Take Home Amount</th>
+                <th style="width: 170px;">Client </th>
+                <th style="width: 130px;">Invoice Date</th>
+                <th style="width: 130px;">Due Date</th>
             </tr>
         </thead>
         <tbody>
@@ -21,6 +23,8 @@
                 <td>{{ invoice.id }}</td>
                 <td>{{ invoice.status }}</td>
                 <td>${{ invoice.total_amount }}</td>
+                <td>${{ invoice.tax_amount }}</td>
+                <td>${{ invoice.take_home_amount }}</td>
                 <td>{{ invoice.created_at|date:"m-d-Y" }}</td>
                 <td>{{ invoice.due_date|date:"m-d-Y" }}</td>
                 <td><a href="{% url 'invoice_detail' invoice.id %}"> View</a></td>

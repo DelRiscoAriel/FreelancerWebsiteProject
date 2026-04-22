@@ -30,6 +30,7 @@ class Project(models.Model):
     billing_type = models.CharField(max_length=10, choices=BILLING_CHOICES, default='hourly')
     hourly_rate = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True)
     fixed_rate = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0, help_text="Tax rate as a percentage (e.g. 10 for 10%)")
     start_date = models.DateField(default=now)
     is_active = models.BooleanField(default=True)
 
@@ -52,6 +53,8 @@ class Invoice(models.Model):
     due_date = models.DateField(default=get_future_date)
     total_hours = models.DecimalField(max_digits=6, decimal_places=2,default=0)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    take_home_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     notes = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
 
@@ -94,5 +97,3 @@ class TimeEntry(models.Model):
             
     def __str__(self):
         return f"{self.project.name} - {self.total_hours()} hrs"
-
-

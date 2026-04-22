@@ -97,13 +97,26 @@
 
                     <h3>{{ project.name }}</h3>
                     <p>Client: <strong>{{ project.client.name|default:"—"}}</strong> | {{ project.client.company|default:"—"}} | {{ project.client.email|default:"—"}} | {{ project.client.phone|default:"—"}} | {{ project.client.address|default:"—" }}</p>
-                    <p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
-                    {% if project.billing_type == "hourly" %}
-                    <p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
-                    {% elif project.billing_type == "fixed" %}
-                    <p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
-                    {% endif %}
+                    <form method="post" action="{% url 'update_project_rates' project.id %}">
+                        {% csrf_token %}
+
+                        <p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
+
+                        {% if project.billing_type == "hourly" %}
+                            <label>Hourly Rate:</label>
+                            <input type="number" step="0.01" name="hourly_rate" value="{{ project.hourly_rate }}" style="width: 70px;">
+                        {% elif project.billing_type == "fixed" %}
+                            <label>Fixed Rate:</label>
+                            <input type="number" step="0.01" name="fixed_rate" value="{{ project.fixed_rate }}" style="width: 70px;">
+                        {% endif %}
+
+                        <label style="margin-left: 10px;">Tax Rate (%):</label>
+                        <input type="number" step="0.01" min="0" max="100" name="tax_rate" value="{{ project.tax_rate }}" style="width: 70px;">
+
+                        <button type="submit">💾 Save</button>
+                    </form>
                     <p>Start Date: <strong>{{ project.start_date }}</strong></p>
+                    <p><strong><a href="{% url 'edit_project' project.id %}">✏️ Edit Project</a></strong></p>
                     <p><strong><a href="{% url 'track_time' project.id %}">⏱ Open Time Tracker</a></strong></p>
                     <p><strong><a href="{% url 'project_time_entries' project.id %}">📋 Open Time Entries</a></strong></p>
                     <br>
@@ -131,10 +144,3 @@
 </div>
 
 {% endblock %}
-
-<p>Billing Type: <strong>{{ project.get_billing_type_display }}</strong></p>
-{% if project.billing_type == "hourly" %}
-<p>Hourly Rate: <strong>${{ project.hourly_rate }}</strong></p>
-{% elif project.billing_type == "fixed" %}
-<p>Fixed Rate: <strong>${{ project.fixed_rate }}</strong></p>
-{% endif %}

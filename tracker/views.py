@@ -82,7 +82,7 @@ def dashboard_view(request):
 
     page_number = request.GET.get('page')
     projects_pag = paginator.get_page(page_number)
-    
+
     context = {
         'projects': projects_pag,
         'invoices': invoices,
@@ -371,10 +371,13 @@ def create_invoice_project_view(request, project_id):
             invoice.total_hours = sum(te.total_hours() for te in time_entries)
             if invoice.project.billing_type == 'hourly':
                 hourly_rate = invoice.project.hourly_rate or Decimal('0.00')
-                invoice.total_amount = invoice.total_hours * hourly_rate
+                subtotal = invoice.total_hours * hourly_rate
             else:
-                hourly_rate = invoice.project.fixed_rate or Decimal('0.00')
-                invoice.total_amount = hourly_rate
+                subtotal = invoice.project.fixed_rate or Decimal('0.00')
+            tax_rate = project.tax_rate or Decimal('0.00')
+            invoice.tax_amount = (subtotal * tax_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+            invoice.total_amount = subtotal
+            invoice.take_home_amount = subtotal - invoice.tax_amount
             invoice.user = request.user
             invoice.save()
             for entry in time_entries:
@@ -485,8 +488,12 @@ def invoice_detail_view(request, invoice_id):
         rate = invoice.project.hourly_rate or Decimal('0.00')
 
         invoice.total_hours = sum(te.total_hours() for te in time_entries)
-        formatted_total_amount = f"{invoice.total_hours * rate:.2f}"
+        subtotal = invoice.total_hours * rate
+        tax_rate = invoice.project.tax_rate or Decimal('0.00')
+        invoice.tax_amount = (subtotal * tax_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        formatted_total_amount = f"{subtotal:.2f}"
         invoice.total_amount = formatted_total_amount
+        invoice.take_home_amount = subtotal - invoice.tax_amount
         invoice.save()
         for entry in time_entries:
             hours = entry.total_hours() or 0
@@ -504,17 +511,28 @@ def invoice_detail_view(request, invoice_id):
         
         formatted_total_unpaid = f"{total_unpaid:.2f}"
         formatted_total_paid = f"{total_paid:.2f}"
+        formatted_subtotal = f"{subtotal:.2f}"
+        formatted_tax_amount = f"{invoice.tax_amount:.2f}"
         
         return render(request, 'invoice_detail.html', {
             'invoice': invoice,
             'entry_details': entry_details,
             'total_paid': formatted_total_paid,
             'total_unpaid': formatted_total_unpaid,
+            'subtotal': formatted_subtotal,
+            'tax_rate': tax_rate,
+            'tax_amount': formatted_tax_amount,
         })
     else:
+        tax_rate = invoice.project.tax_rate or Decimal('0.00')
+        subtotal = invoice.project.fixed_rate or Decimal('0.00')
+        tax_amount = (subtotal * tax_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         return render(request, 'invoice_detail.html', {
-        'invoice': invoice,
-        'entry_details': time_entries
+            'invoice': invoice,
+            'entry_details': time_entries,
+            'subtotal': f"{subtotal:.2f}",
+            'tax_rate': tax_rate,
+            'tax_amount': f"{tax_amount:.2f}",
         })
         
 
@@ -569,7 +587,10 @@ def export_invoice_pdf(request, invoice_id):
         rate = invoice.project.hourly_rate or Decimal('0.00')
 
         invoice.total_hours = sum(te.total_hours() for te in time_entries)
-        formatted_total_amount = f"{invoice.total_hours * rate:.2f}"
+        subtotal = invoice.total_hours * rate
+        tax_rate = invoice.project.tax_rate or Decimal('0.00')
+        invoice.tax_amount = (subtotal * tax_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        formatted_total_amount = f"{subtotal + invoice.tax_amount:.2f}"
         invoice.total_amount = formatted_total_amount
         invoice.save()
         for entry in time_entries:
@@ -601,12 +622,21 @@ def export_invoice_pdf(request, invoice_id):
             'time_entries': entry_details,
             'total_paid': formatted_total_paid,
             'total_unpaid': formatted_total_unpaid,
+            'subtotal': f"{subtotal:.2f}",
+            'tax_rate': tax_rate,
+            'tax_amount': f"{invoice.tax_amount:.2f}",
         })
     else:
+        tax_rate = invoice.project.tax_rate or Decimal('0.00')
+        subtotal = invoice.project.fixed_rate or Decimal('0.00')
+        tax_amount = (subtotal * tax_rate / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
         template = get_template("invoice_pdf.html")
         html = template.render({
-        'invoice': invoice,
-        'time_entries': time_entries
+            'invoice': invoice,
+            'time_entries': time_entries,
+            'subtotal': f"{subtotal:.2f}",
+            'tax_rate': tax_rate,
+            'tax_amount': f"{tax_amount:.2f}",
         })
         
     response = HttpResponse(content_type='application/pdf')
@@ -620,3 +650,58 @@ def export_invoice_pdf(request, invoice_id):
 
     response.write(pdf.getvalue())
     return response
+
+def update_project_rates(request, project_id):
+    project = get_object_or_404(Project, id=project_id, user=request.user)
+
+    if request.method == "POST":
+        if project.billing_type == "hourly":
+            project.hourly_rate = request.POST.get("hourly_rate") or 0
+        elif project.billing_type == "fixed":
+            project.fixed_rate = request.POST.get("fixed_rate") or 0
+
+        tax_rate = request.POST.get("tax_rate", "").strip()
+        if tax_rate != "":
+            project.tax_rate = tax_rate
+
+        project.save()
+        messages.success(request, "Rate updated successfully.")
+
+    return redirect("dashboard")
+
+@login_required
+def edit_project_view(request, project_id):
+    project = get_object_or_404(Project, id=project_id, user=request.user)
+    clients = Client.objects.filter(user=request.user)
+ 
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        billing_type = request.POST.get('billing_type', 'hourly')
+        hourly_rate = request.POST.get('hourly_rate') or None
+        fixed_rate = request.POST.get('fixed_rate') or None
+        tax_rate = request.POST.get('tax_rate') or 0
+        start_date = request.POST.get('start_date')
+        client_id = request.POST.get('client_id')
+ 
+        if not name:
+            messages.error(request, "Project name is required.")
+        else:
+            project.name = name
+            project.billing_type = billing_type
+            project.hourly_rate = hourly_rate if billing_type == 'hourly' else None
+            project.fixed_rate = fixed_rate if billing_type == 'fixed' else None
+            project.tax_rate = tax_rate
+            if start_date:
+                project.start_date = start_date
+            if client_id:
+                project.client = get_object_or_404(Client, id=client_id, user=request.user)
+            else:
+                project.client = None
+            project.save()
+            messages.success(request, f"Project '{project.name}' updated successfully.")
+            return redirect('dashboard')
+ 
+    return render(request, 'edit_project.html', {
+        'project': project,
+        'clients': clients,
+    })

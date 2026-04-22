@@ -47,10 +47,12 @@
         <th>ID</th>
         <th>Project</th>
         <th>Status</th>
-        <th>Total</th>
-        <th>Client</th>
-        <th>Invoice Date</th>
-        <th>Due Date</th>
+        <th style="width: 120px;">Total Amount</th>
+        <th style="width: 110px;">Tax Amount</th>
+        <th style="width: 170px;">Take Home Amount</th>
+        <th style="width: 170px;">Client </th>
+        <th style="width: 130px;">Invoice Date</th>
+        <th style="width: 130px;">Due Date</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -61,11 +63,11 @@
         <td>{{ invoice.project.name }}</td>
         <td>{{ invoice.status}}</td>
         <td>${{ invoice.total_amount }}</td>
+        <td>${{ invoice.tax_amount }}</td>
+        <td>${{ invoice.take_home_amount }}</td>
         <td>{{ invoice.project.client}}</td>
         <td>{{ invoice.created_at|date:"m-d-Y" }}</td>
-        <td style="{% if invoice.due_date and invoice.due_date < today and invoice.status != 'Paid' %}color:red;{% endif %}">
-          {{ invoice.due_date|date:"m-d-Y" }}
-        </td>
+        <td>{{ invoice.due_date|date:"m-d-Y" }}</td>
         <td><a href="{% url 'invoice_detail' invoice.id %}">View</a></td>
       </tr>
       {% endfor %}

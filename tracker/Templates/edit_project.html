@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+.edit-project-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.edit-project-container h2 {
+    margin-top: 0;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3366ff;
+    box-shadow: 0 0 0 2px rgba(51,102,255,0.15);
+}
+
+.rate-fields {
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.btn-save {
+    padding: 10px 20px;
+    background-color: #3366ff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-save:hover {
+    background-color: #254eda;
+}
+
+.btn-cancel {
+    padding: 10px 20px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-cancel:hover {
+    background-color: #e0e0e0;
+}
+</style>
+
+<div class="edit-project-container">
+    <h2>✏️ Edit Project</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color: {% if message.tags == 'error' %}#cc0000{% else %}#007700{% endif %};">
+                <strong>{{ message }}</strong>
+            </p>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="name">Project Name</label>
+            <input type="text" id="name" name="name" value="{{ project.name }}" required>
+        </div>
+
+        <div class="form-group">
+            <label for="client_id">Client</label>
+            <select id="client_id" name="client_id">
+                <option value="">— No Client —</option>
+                {% for client in clients %}
+                    <option value="{{ client.id }}" {% if project.client.id == client.id %}selected{% endif %}>
+                        {{ client.name }}{% if client.company %} ({{ client.company }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="billing_type">Billing Type</label>
+            <select id="billing_type" name="billing_type" onchange="toggleRateFields()">
+                <option value="hourly" {% if project.billing_type == 'hourly' %}selected{% endif %}>Hourly Rate</option>
+                <option value="fixed" {% if project.billing_type == 'fixed' %}selected{% endif %}>Fixed Rate</option>
+            </select>
+        </div>
+
+        <div class="form-group rate-fields" id="hourly_field">
+            <label for="hourly_rate">Hourly Rate ($)</label>
+            <input type="number" id="hourly_rate" name="hourly_rate" step="0.01" min="0" value="{{ project.hourly_rate|default:'' }}">
+        </div>
+
+        <div class="form-group rate-fields" id="fixed_field">
+            <label for="fixed_rate">Fixed Rate ($)</label>
+            <input type="number" id="fixed_rate" name="fixed_rate" step="0.01" min="0" value="{{ project.fixed_rate|default:'' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="tax_rate">Tax Rate (%)</label>
+            <input type="number" id="tax_rate" name="tax_rate" step="0.01" min="0" max="100" value="{{ project.tax_rate|default:'0' }}">
+        </div>
+
+        <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input type="date" id="start_date" name="start_date" value="{{ project.start_date|date:'Y-m-d' }}">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-save">💾 Save Changes</button>
+            <a href="{% url 'dashboard' %}" class="btn-cancel">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleRateFields() {
+    const billingType = document.getElementById('billing_type').value;
+    document.getElementById('hourly_field').style.display = billingType === 'hourly' ? 'block' : 'none';
+    document.getElementById('fixed_field').style.display = billingType === 'fixed' ? 'block' : 'none';
+}
+// Run on page load to show the correct field
+toggleRateFields();
+</script>
+
+{% endblock %}
